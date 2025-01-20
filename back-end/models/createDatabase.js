@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 // Import all models
 const Account = require('./account');
@@ -22,7 +23,7 @@ const WorkSchedule = require('./workSchedule');
 
 const createDatabase = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/your_database_name';
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/FUHotPot';
     await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('MongoDB connected');
 
@@ -44,15 +45,33 @@ const createDatabase = async () => {
     await ShiftDetail.createCollection();
     await Table.createCollection();
     await WorkSchedule.createCollection();
+
     // Insert roles
     const roles = [
-        { name: 'ADMIN' },
-        { name: 'WAITER' },
-        { name: 'ACCOUNTANCE' },
-        { name: 'HRANDA' }
+      { name: 'ADMIN' },
+      { name: 'WAITER' },
+      { name: 'ACCOUNTANCE' },
+      { name: 'HRANDA' }
     ];
-    await Role.insertMany(roles);
-    console.log('Collections created successfully');
+    const insertedRoles = await Role.insertMany(roles);
+
+    // Find ADMIN role
+    const adminRole = insertedRoles.find(role => role.name === 'ADMIN');
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash('adminpassword', 10);
+
+    // Insert admin account
+    const adminAccount = new Account({
+      user_name: 'admin',
+      role_id: adminRole._id,
+      password: hashedPassword,
+      start_working: new Date(),
+      is_working: true
+    });
+    await adminAccount.save();
+
+    console.log('Collections created, roles and admin account inserted successfully');
     mongoose.connection.close();
   } catch (err) {
     console.error('Error creating collections:', err.message);
