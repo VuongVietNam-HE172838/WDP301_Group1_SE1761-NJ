@@ -18,7 +18,7 @@ exports.login = async (req, res) => {
 
     const payload = { accountId: account._id };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '1d' });
 
     await AccountDetail.findOneAndUpdate({ account_id: account._id }, { refresh_token: refreshToken });
 
