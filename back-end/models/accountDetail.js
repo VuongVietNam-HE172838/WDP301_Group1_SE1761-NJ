@@ -6,6 +6,7 @@ const accountDetailSchema = new Schema({
   full_name: { type: String, required: true },
   phone_number: { type: String, required: true },
   birth_of_date: { type: Date, required: true },
+  id_number: { type: String, required: true },
   gender: { type: String, required: true },
   address: { type: String, required: true },
   profile_picture: { type: String, required: true },
