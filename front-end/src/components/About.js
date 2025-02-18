@@ -9,7 +9,7 @@ function About() {
     navigate("/menu");
   };
   return (
-    <section className="container mt-4 pt-10 bg-gradient" style={{ background: "linear-gradient(to right, #ec4899, #3b82f6)" }}>
+    <section className="container mt-5 pt-10 bg-gradient" style={{ background: "linear-gradient(to right, #ec4899, #3b82f6)" }}>
       <div className="row align-items-center">
         {/* Left Section */}
         <div className="col-md-6 text-start">
