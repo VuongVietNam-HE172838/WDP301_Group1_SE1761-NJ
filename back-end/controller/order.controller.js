@@ -19,4 +19,38 @@ exports.create = async (req, res) => {
         res.status(500).send('Server error');
     }
     };
+
+exports.findAll = async (req, res) => {
+    try {
+        const bills = await bill.find();
+        res.status(200).json(bills);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+exports.findOne = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const oneBill = await bill.findById
+        (id);
+        res.status(200).json(oneBill);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+exports.update = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const updatedBill = await bill.findByIdAndUpdate(id, req.body , {new: true});
+        res.status(200).json(updatedBill);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
     
