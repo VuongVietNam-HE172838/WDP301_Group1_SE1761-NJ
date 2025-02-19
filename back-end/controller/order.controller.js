@@ -53,4 +53,15 @@ exports.update = async (req, res) => {
         res.status(500).send('Server error');
     }
 }
+
+exports.delete = async (req, res) => {
+    const id = req.params.id;
+    try {
+        await bill.findByIdAndDelete(id);
+        res.status(200).json({message: 'Deleted successfully'});
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
     
