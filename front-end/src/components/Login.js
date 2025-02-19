@@ -12,7 +12,7 @@ const Login = () => {
 
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
-      <div className="row shadow-lg rounded overflow-hidden border bg-white mx-auto" style={{ maxWidth: "100%", width: "750px" }}>
+      <div className="row shadow-lg rounded overflow-hidden border bg-white mx-auto" style={{ maxWidth: "100%", width: "900px"}}>
         {/* Left Section: Banner */}
         <div className="d-none d-lg-block col-lg-7 p-0">
           <img src={loginBanner2} alt="Login Banner" className="img-fluid w-100 h-100" />
