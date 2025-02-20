@@ -26,7 +26,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-white text-dark py-5">
+    <footer className="bg-white text-dark py-5" style={{ borderTop: "1px solid #dee2e6" }}>
       <Container>
         <Row>
           <Col md={4} className="mb-4">

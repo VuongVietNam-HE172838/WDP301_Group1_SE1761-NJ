@@ -5,11 +5,13 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import loginBanner2 from "../assets/auth4.png";
 import "bootstrap/dist/css/bootstrap.min.css";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
+  const [recaptchaToken, setRecaptchaToken] = useState('');
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -51,7 +53,7 @@ const Login = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user_name: userName, password: password }),
+      body: JSON.stringify({ user_name: userName, password: password, recaptchaToken }),
     });
     const data = await res.json();
     // Xử lý phản hồi từ back-end
@@ -71,10 +73,15 @@ const Login = () => {
     }
   };
 
+  const handleRecaptchaChange = (token) => {
+    setRecaptchaToken(token);
+  };
+
+
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
       <div className="container d-flex justify-content-center align-items-center min-vh-100">
-        <div className="row shadow-lg rounded overflow-hidden border bg-white mx-auto" style={{ maxWidth: "100%", width: "750px" }}>
+        <div className="row shadow-lg rounded overflow-hidden border bg-white mx-auto" style={{ maxWidth: "100%", width: "950px" }}>
           {/* Left Section: Banner */}
           <div className="d-none d-lg-block col-lg-7 p-0">
             <img src={loginBanner2} alt="Login Banner" className="img-fluid w-100 h-100" />
@@ -114,6 +121,14 @@ const Login = () => {
               <a href="/forgetpassword" className="d-block text-end text-muted small mt-2">
                 Quên mật khẩu?
               </a>
+            </div>
+
+            {/* reCAPTCHA */}
+            <div className="mt-3">
+              <ReCAPTCHA
+                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                onChange={handleRecaptchaChange}
+              />
             </div>
 
             {/* Login Button */}
