@@ -42,9 +42,9 @@ const About = () => {
                         Nhằm giúp khách hàng có trải nghiệm tốt nhất, chúng tôi phát triển web app đặt đồ ăn trực tuyến với giao diện thân thiện, dễ sử dụng. Bạn có thể dễ dàng:
                         </p>
                         <ul>
-                            <li>Chất lượng hàng đầu: Luôn sử dụng nguyên liệu tươi sạch và an toàn.</li>
-                            <li>Dịch vụ tận tâm: Phục vụ chuyên nghiệp, nhiệt tình.</li>
-                            <li>Công nghệ hiện đại: Đặt món dễ dàng, giao hàng nhanh chóng.</li>
+                            <li><b>Chất lượng hàng đầu:</b> Luôn sử dụng nguyên liệu tươi sạch và an toàn.</li>
+                            <li><b>Dịch vụ tận tâm:</b> Phục vụ chuyên nghiệp, nhiệt tình.</li>
+                            <li><b>Công nghệ hiện đại:</b> Đặt món dễ dàng, giao hàng nhanh chóng.</li>
                         </ul>
                         <p>
                         Hãy cùng chúng tôi trải nghiệm ẩm thực tuyệt vời tại Food Trip hoặc đặt món ngay trên web app của chúng tôi để tận hưởng những bữa ăn ngon một cách nhanh chóng!
