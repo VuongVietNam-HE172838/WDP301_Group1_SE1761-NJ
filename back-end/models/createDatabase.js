@@ -6,52 +6,21 @@ const bcrypt = require('bcryptjs');
 const Account = require('./account');
 const AccountDetail = require('./accountDetail');
 const Role = require('./role');
-const Bill = require('./bill');
-const BillImportGood = require('./billImportGood');
-const Blog = require('./blog');
-const Category = require('./category');
-const Dish = require('./dish');
-const Ingredience = require('./ingredience');
-const Menu = require('./menu');
-const Order = require('./order');
-const QA = require('./qa');
-const SalaryFactor = require('./salaryFactor');
-const Shift = require('./shift');
-const ShiftDetail = require('./shiftDetail');
-const Table = require('./table');
-const WorkSchedule = require('./workSchedule');
 
 const createDatabase = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/FUHotPot';
-    await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect("mongodb+srv://chungdthe176077:WuKZJBD3KEuFjGiE@cluster0.dsxki.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0");
     console.log('MongoDB connected');
 
     // Create collections
     await Account.createCollection();
     await AccountDetail.createCollection();
     await Role.createCollection();
-    await Bill.createCollection();
-    await BillImportGood.createCollection();
-    await Blog.createCollection();
-    await Category.createCollection();
-    await Dish.createCollection();
-    await Ingredience.createCollection();
-    await Menu.createCollection();
-    await Order.createCollection();
-    await QA.createCollection();
-    await SalaryFactor.createCollection();
-    await Shift.createCollection();
-    await ShiftDetail.createCollection();
-    await Table.createCollection();
-    await WorkSchedule.createCollection();
 
     // Insert roles
     const roles = [
       { name: 'ADMIN' },
-      { name: 'WAITER' },
-      { name: 'ACCOUNTANCE' },
-      { name: 'HRANDA' }
+      { name: 'USER' }
     ];
     const insertedRoles = await Role.insertMany(roles);
 
