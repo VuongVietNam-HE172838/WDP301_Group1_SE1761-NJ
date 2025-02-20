@@ -17,6 +17,25 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    // Kiểm tra Email hợp lệ
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!userName.trim()) {
+      newErrors.userName = 'Địa chỉ Email là bắt buộc';
+    } else if (!emailRegex.test(userName)) {
+      newErrors.userName = 'Địa chỉ Email không hợp lệ';
+    }
+
+    // Kiểm tra Mật khẩu
+    if (!password) {
+      newErrors.password = 'Mật khẩu là bắt buộc';
+    }
+
+    return newErrors;
+  };
+
   const handleGoogleSuccess = async (response) => {
     const { credential } = response;
     // Gửi credential đến back-end để xác thực
@@ -47,36 +66,42 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Gửi thông tin đăng nhập đến back-end để xác thực
-    const res = await fetch(`http://localhost:9999/api/authen/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ user_name: userName, password: password, recaptchaToken }),
-    });
-    const data = await res.json();
-    // Xử lý phản hồi từ back-end
-    if (res.ok) {
-      console.log(data);
-
-      // Lưu thông tin vào localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      localStorage.setItem('accountDetail', JSON.stringify(data.accountDetail));
-
-      // Chuyển hướng người dùng về path "/"
-      window.location.href = '/';
+    const newErrors = validate();
+    if (Object.keys(newErrors).length > 0) {
+      Object.values(newErrors).forEach(error => {
+        toast.error(error);
+      });
     } else {
-      console.error('Login failed', data.message);
-      toast.error(data.message); // Hiển thị thông báo lỗi dưới dạng popup
+      // Gửi thông tin đăng nhập đến back-end để xác thực
+      const res = await fetch(`http://localhost:9999/api/authen/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_name: userName, password: password, recaptchaToken }),
+      });
+      const data = await res.json();
+      // Xử lý phản hồi từ back-end
+      if (res.ok) {
+        console.log(data);
+
+        // Lưu thông tin vào localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('accountDetail', JSON.stringify(data.accountDetail));
+
+        // Chuyển hướng người dùng về path "/"
+        window.location.href = '/';
+      } else {
+        console.error('Login failed', data.message);
+        toast.error(data.message); // Hiển thị thông báo lỗi dưới dạng popup
+      }
     }
   };
 
   const handleRecaptchaChange = (token) => {
     setRecaptchaToken(token);
   };
-
 
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
