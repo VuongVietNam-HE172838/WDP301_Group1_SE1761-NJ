@@ -11,6 +11,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import ForgetPassword from './components/ForgetPassword';
 import './App.css';
+import Intro from './components/Intro';
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/" element={<About />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/menu" element={<Menu />} />
+          <Route path="/introduction" element={<Intro />} />
         </Routes>
         <Footer />
       </div>
