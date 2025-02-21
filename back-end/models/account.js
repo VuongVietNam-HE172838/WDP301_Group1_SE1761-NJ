@@ -8,7 +8,8 @@ const AccountSchema = new Schema({
   role_id: { type: Schema.Types.ObjectId, ref: 'Role' },
   start_working: { type: Date, default: Date.now },
   loginAttempts: { type: Number, required: true, default: 0 },
-  lockUntil: { type: Number }
+  lockUntil: { type: Number },
+  isVerified: { type: Boolean, default: false } // Thêm trường isVerified
 });
 
 AccountSchema.virtual('isLocked').get(function() {
