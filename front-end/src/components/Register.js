@@ -73,7 +73,7 @@ const Register = () => {
     } else {
       try {
         // Gửi dữ liệu đăng ký đến back-end
-        const response = await fetch('http://localhost:9999/api/authen/register', {
+        const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const Register = () => {
     const { credential } = response;
     try {
       // Gửi credential đến back-end để xác thực
-      const res = await fetch(`http://localhost:9999/api/authen/google-login`, {
+      const res = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/google-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

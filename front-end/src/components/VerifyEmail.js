@@ -14,7 +14,7 @@ const VerifyEmail = () => {
     const token = query.get('token');
 
     if (token) {
-      fetch(`http://localhost:9999/api/authen/verify-email?token=${token}`)
+      fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/verify-email?token=${token}`)
         .then(response => response.json())
         .then(data => {
           if (data.message) {
