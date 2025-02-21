@@ -1,13 +1,13 @@
-const nodemailer = require('nodemailer');
-const jwt = require('jsonwebtoken');
-const { Account, UsedToken } = require('../models');
+const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
+const { Account, UsedToken } = require("../models");
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 exports.sendOTP = async (req, res) => {
@@ -16,17 +16,26 @@ exports.sendOTP = async (req, res) => {
   try {
     const account = await Account.findOne({ user_name: email });
     if (!account) {
-      return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
+      return res
+        .status(404)
+        .json({ message: "Email không tồn tại trong hệ thống!" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // OTP 6 chữ số
-    const token = jwt.sign({ otp, email }, process.env.JWT_SECRET, { expiresIn: '5m' });
+    const token = jwt.sign({ otp, email }, process.env.JWT_SECRET, {
+      expiresIn: "5m",
+    });
 
     const mailOptions = {
       from: `"Hệ thống tài khoản" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'Mã OTP để đặt lại mật khẩu',
-      html: `<p>Mã OTP của bạn là: <strong>${otp}</strong></p><p>Mã OTP này sẽ hết hạn sau 5 phút.</p>`
+      subject: "Mã OTP để đặt lại mật khẩu",
+      html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #dc3545; text-align: center;">Mã OTP để đặt lại mật khẩu</h2>
+        <p style="font-size: 16px;">Mã OTP của bạn là: <strong style="font-size: 18px;">${otp}</strong></p>
+        <p style="font-size: 16px;">Mã OTP này sẽ hết hạn sau 5 phút.</p>
+      </div>`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -62,7 +71,7 @@ exports.verifyOTP = async (req, res) => {
 
     res.status(200).json({ message: "OTP hợp lệ.", email: decoded.email });
   } catch (err) {
-    if (err.name === 'TokenExpiredError') {
+    if (err.name === "TokenExpiredError") {
       return res.status(400).json({ message: "OTP đã hết hạn." });
     }
     console.error(err.message);
