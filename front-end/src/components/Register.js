@@ -100,7 +100,7 @@ const Register = () => {
         setPhoneNumber('');
         setPassword('');
         setConfirmPassword('');
-        toast.success('Đăng ký thành công!');
+        toast.success(data.message);
       } catch (error) {
         toast.error(error.message);
       }

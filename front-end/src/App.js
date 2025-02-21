@@ -10,6 +10,7 @@ import Reviews from './components/Reviews';
 import Login from './components/Login';
 import Register from './components/Register';
 import ForgetPassword from './components/ForgetPassword';
+import VerifyEmail from './components/VerifyEmail';
 import './App.css';
 import Intro from './components/Intro';
 
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
+          <Route path="/verify-email" element={<VerifyEmail/>} />
         </Routes>
         <Footer />
       </div>

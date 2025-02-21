@@ -29,6 +29,12 @@ exports.login = async (req, res) => {
         .json({ message: "Tài khoản của bạn không tồn tại trong hệ thống!" });
     }
 
+    if (!account.isVerified) {
+      return res
+        .status(403)
+        .json({ message: "Tài khoản của bạn chưa được xác minh. Vui lòng kiểm tra email để xác minh tài khoản." });
+    }
+    
     if (account.isLocked) {
       return res
         .status(403)
@@ -101,6 +107,7 @@ exports.googleLogin = async (req, res) => {
         password: hashedPassword,
         role_id: userRole._id,
         start_working: new Date(),
+        isVerified: true, // Đặt isVerified thành true
       });
       await account.save();
 
@@ -227,11 +234,27 @@ exports.register = async (req, res) => {
 
     // Gửi email xác nhận
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Chăm sóc khách hàng OrderingSystem" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'Xác nhận tài khoản của bạn',
-      html: `<p>Vui lòng nhấp vào liên kết sau để xác nhận tài khoản của bạn:</p>
-             <a href="${process.env.CLIENT_URL}/verify-email?token=${token}">Xác nhận tài khoản</a>`
+      subject: 'Xác nhận tài khoản',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+          <h2 style="color: #dc3545; text-align: center;">Xác nhận tài khoản</h2>
+          <p>Xin chào ${fullName},</p>
+          <p>Vui lòng nhấp vào liên kết sau để xác nhận tài khoản của bạn:</p>
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="http://localhost:3000/verify-email?token=${token}" style="background-color: #dc3545; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Xác nhận tài khoản</a>
+          </div>
+          <p>Đường link test product:</p>
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="https://foodtripvn.site/verify-email?token=${token}" style="background-color: #dc3545; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Xác nhận tài khoản</a>
+          </div>
+          <p>Nếu bạn không yêu cầu tạo tài khoản này, vui lòng bỏ qua email này.</p>
+          <p style="color: #dc3545; font-weight: bold;">Đường link này sẽ hết hạn sau 7 ngày</p>
+          <p>Trân trọng,</p>
+          <p>Chăm sóc khách hàng OrderingSystem</p>
+        </div>
+      `
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
