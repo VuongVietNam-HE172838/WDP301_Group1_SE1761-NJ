@@ -1,6 +1,6 @@
 #1, Chạy Docker trên VPS
-```cd /path/to/backend
-```docker-compose up -d
+```cd /path/to/backend```
+```docker-compose up -d```
 
 #2, Kiểm tra API đang chạy
 curl http://<VPS:ip>:9999/api/health
