@@ -4,13 +4,15 @@ require('dotenv').config();
 const Account = require('./account');
 const AccountDetail = require('./accountDetail');
 const Role = require('./role');
+const UsedToken = require('./usedToken');
 
 mongoose.Promise = global.Promise;
 
 const db = {
   Account,
   AccountDetail,
-  Role
+  Role,
+  UsedToken
 };
 
 db.connectDB = async () => {

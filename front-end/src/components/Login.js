@@ -39,7 +39,7 @@ const Login = () => {
   const handleGoogleSuccess = async (response) => {
     const { credential } = response;
     // Gửi credential đến back-end để xác thực
-    const res = await fetch(`http://localhost:9999/api/authen/google-login`, {
+    const res = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/google-login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ const Login = () => {
       });
     } else {
       // Gửi thông tin đăng nhập đến back-end để xác thực
-      const res = await fetch(`http://localhost:9999/api/authen/login`, {
+      const res = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

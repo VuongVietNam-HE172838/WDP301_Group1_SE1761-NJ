@@ -156,34 +156,6 @@ exports.googleLogin = async (req, res) => {
   }
 };
 
-exports.changePassword = async (req, res) => {
-  const { username, oldPassword, newPassword } = req.body;
-  try {
-    const account = await Account.findOne({ username });
-    if (!account) {
-      return res
-        .status(404)
-        .json({ message: "Tài khoản không tồn tại trong hệ thống!" });
-    }
-    const isMatch = await bcrypt.compare(oldPassword, account.password);
-    if (!isMatch) {
-      return res.status(500).json({ message: "Mật khẩu không khớp!" });
-    }
-    const salt = await bcrypt.genSalt(10);
-    account.password = await bcrypt.hash(newPassword, salt);
-    await account.save();
-    res
-      .status(200)
-      .json({
-        message:
-          "Mật khẩu thay đổi thành công. Vui lòng đăng nhập lại với mật khẩu mới!",
-      });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
-  }
-};
-
 exports.register = async (req, res) => {
   const { fullName, email, phoneNumber, password } = req.body;
 
@@ -250,7 +222,7 @@ exports.register = async (req, res) => {
             <a href="https://foodtripvn.site/verify-email?token=${token}" style="background-color: #dc3545; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Xác nhận tài khoản</a>
           </div>
           <p>Nếu bạn không yêu cầu tạo tài khoản này, vui lòng bỏ qua email này.</p>
-          <p style="color: #dc3545; font-weight: bold;">Đường link này sẽ hết hạn sau 7 ngày</p>
+          <p style="color: #dc3545; font-weight: bold;">Đường link này sẽ hết hạn sau 7 ngày. Nếu bạn có câu hỏi, vui lòng phản hồi lại email này!</p>
           <p>Trân trọng,</p>
           <p>Chăm sóc khách hàng OrderingSystem</p>
         </div>
@@ -285,6 +257,26 @@ exports.verifyEmail = async (req, res) => {
     await account.save();
 
     res.status(200).json({ message: "Tài khoản đã được xác nhận thành công!" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const account = await Account.findOne({ user_name: email });
+    if (!account) {
+      return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    account.password = await bcrypt.hash(password, salt);
+    await account.save();
+
+    res.status(200).json({ message: "Đổi mật khẩu thành công." });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");

@@ -1,82 +1,105 @@
-
 import React, { useState } from "react";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import registerBanner2 from "../assets/auth4.png"; // Đảm bảo đường dẫn hình ảnh đúng
 
 const ForgetPassword = () => {
   const [step, setStep] = useState("email"); // Các bước: 'email', 'otp', 'resetPassword', 'success'
   const [email, setEmail] = useState("");
-  const [generatedOTP, setGeneratedOTP] = useState("");
+  const [otpToken, setOtpToken] = useState("");
   const [enteredOTP, setEnteredOTP] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const navigate = useNavigate(); // Hook để điều hướng
 
-  // Hàm sinh OTP ngẫu nhiên
-  const generateOTP = () => {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // OTP 6 chữ số
-    return otp;
-  };
-
   // Hàm xử lý gửi OTP
-  const handleSendOTP = (e) => {
+  const handleSendOTP = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
     // Kiểm tra định dạng email đơn giản
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Vui lòng nhập một địa chỉ email hợp lệ.");
+      toast.error("Vui lòng nhập một địa chỉ email hợp lệ.");
       return;
     }
-    const otp = generateOTP();
-    setGeneratedOTP(otp);
-    console.log(`OTP đã được gửi tới email ${email}: ${otp}`); // Trong thực tế, OTP sẽ được gửi qua email
-    setMessage("Đã gửi OTP đến email của bạn.");
-    setStep("otp");
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setOtpToken(data.token);
+        toast.success(data.message);
+        setStep("otp");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
+    }
   };
 
   // Hàm xử lý xác thực OTP
-  const handleVerifyOTP = (e) => {
+  const handleVerifyOTP = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
-    if (enteredOTP === generatedOTP) {
-      setMessage("OTP hợp lệ. Bạn có thể đổi mật khẩu.");
-      setStep("resetPassword");
-    } else {
-      setError("OTP không hợp lệ. Vui lòng thử lại.");
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ otp: enteredOTP, token: otpToken }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+        setStep("resetPassword");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
     }
   };
 
   // Hàm xử lý đổi mật khẩu
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
     if (password !== confirmPassword) {
-      setError("Mật khẩu và xác nhận mật khẩu không khớp.");
+      toast.error("Mật khẩu và xác nhận mật khẩu không khớp.");
       return;
     }
-    if (password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự.");
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+    if (!passwordRegex.test(password)) {
+      toast.error("Mật khẩu phải có ít nhất 12 ký tự, bao gồm ít nhất một chữ cái thường, một chữ cái hoa, một số và một ký tự đặc biệt.");
       return;
     }
-    // Ở đây, chúng ta sẽ chỉ mô phỏng việc đổi mật khẩu thành công
-    setMessage("Đổi mật khẩu thành công. Bạn có thể đăng nhập ngay bây giờ.");
-    setStep("success");
-    // Reset các trạng thái
-    setEmail("");
-    setGeneratedOTP("");
-    setEnteredOTP("");
-    setPassword("");
-    setConfirmPassword("");
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+        setStep("success");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
+    }
   };
 
   // Hàm điều hướng về trang chủ
@@ -186,7 +209,7 @@ const ForgetPassword = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Nhập mật khẩu mới"
                   />
-                  <div className="position-absolute top-50 end-0 me-3 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
+                  <div className="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
                   </div>
                 </div>
@@ -206,7 +229,7 @@ const ForgetPassword = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Xác nhận mật khẩu"
                   />
-                  <div className="position-absolute top-50 end-0 me-3 cursor-pointer" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <div className="position-absolute top-50 end-0 translate-middle-y me-3 cursor-pointer" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                     {showConfirmPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
                   </div>
                 </div>
@@ -235,7 +258,6 @@ const ForgetPassword = () => {
           {/* Step: Thành Công */}
           {step === "success" && (
             <div className="text-center mt-4">
-              <p className="text-success">{message}</p>
               <button
                 onClick={handleGoToLogin}
                 className="btn btn-danger w-100 mt-3"
@@ -245,9 +267,7 @@ const ForgetPassword = () => {
             </div>
           )}
 
-          {/* Hiển thị thông báo lỗi hoặc thành công */}
-          {message && <p className="text-success text-center mt-4">{message}</p>}
-          {error && <p className="text-danger text-center mt-4">{error}</p>}
+          <ToastContainer />
         </div>
       </div>
     </div>
