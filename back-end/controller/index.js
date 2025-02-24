@@ -4,5 +4,5 @@ const orderController = require('./order.controller');
 const changepassController = require('./changepass.controller');
 
 module.exports = {
-  authenController, orderController, changepassController
+  authenController, orderController, changepassController, otpController
 };
