@@ -9,7 +9,7 @@ const Role = require('./role');
 
 const createDatabase = async () => {
   try {
-    await mongoose.connect("mongodb+srv://chungdthe176077:WuKZJBD3KEuFjGiE@cluster0.dsxki.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0");
+    await mongoose.connect("mongodb+srv://quanpdhe170415:aEjUnpW2mk3nqVYX@wdp.qcw4k.mongodb.net/wdp?retryWrites=true&w=majority&appName=Cluster0");
     console.log('MongoDB connected');
 
     // Create collections
