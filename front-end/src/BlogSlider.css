@@ -1,0 +1,17 @@
+.header {
+    background-image: url('https://example.com/background-image.jpg'); /* Thay bằng link hình nền thực tế */
+    background-size: cover;
+    background-position: center;
+    text-align: center;
+    color: white;
+    padding: 100px 0;
+}
+
+.header h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.header p {
+    font-size: 1.5rem;
+}
