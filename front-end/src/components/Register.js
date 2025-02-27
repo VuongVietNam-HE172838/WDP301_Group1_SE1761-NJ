@@ -5,6 +5,7 @@ import registerBanner from "../assets/auth4.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +15,7 @@ const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -38,7 +40,7 @@ const Register = () => {
     }
   
     // Kiểm tra Số điện thoại (10 số)
-    const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex = /^[0-9]{9}$/;
     if (!phoneNumber.trim()) {
       newErrors.phoneNumber = 'Số điện thoại là bắt buộc';
     } else if (!phoneRegex.test(phoneNumber)) {
@@ -101,6 +103,7 @@ const Register = () => {
         setPassword('');
         setConfirmPassword('');
         toast.success(data.message);
+        navigate("/login");
       } catch (error) {
         toast.error(error.message);
       }

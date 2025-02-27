@@ -1,8 +1,31 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/LOGOBIG.png";
+import { FaUserCircle } from "react-icons/fa"; // Icon user
 
 function Header() {
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setToken(localStorage.getItem("token"));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("accountDetail");
+    setToken(null);
+    navigate("/login");
+  };
+
   const navItems = ["TRANG CHỦ", "MENU", "ĐẶT HÀNG", "GIỚI THIỆU", "TIN TỨC"];
   const navItemLinks = ["home", "menu", "order", "introduction", "blog"];
 
@@ -40,14 +63,58 @@ function Header() {
               ))}
             </ul>
 
-            {/* User Menu / Login-Register */}
-            <div className="d-flex gap-2">
-              <Link to="/login">
-              <button class="btn btn-outline-secondary text-dark hover-effect">Đăng nhập</button>
-              </Link>
-              <Link to="/register">
-                <button className="btn btn-danger text-white">Đăng ký</button>
-              </Link>
+            {/* User Menu */}
+            <div className="d-flex gap-3 align-items-center">
+              {token ? (
+                <div className="dropdown">
+                  {/* Profile Icon */}
+                  <button
+                    className="btn btn-outline-secondary dropdown-toggle d-flex align-items-center"
+                    type="button"
+                    id="dropdownMenuButton"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <FaUserCircle className="fs-4 me-2" /> Tài khoản
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    <li>
+                      <Link className="dropdown-item" to="/profile">
+                        Chi tiết Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/cart">
+                        Giỏ hàng
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/transaction-history">
+                        Lịch sử giao dịch
+                      </Link>
+                    </li>
+                    <li>
+                      <hr className="dropdown-divider" />
+                    </li>
+                    <li>
+                      <button className="dropdown-item text-danger" onClick={handleLogout}>
+                        Đăng xuất
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <button className="btn btn-outline-secondary text-dark hover-effect">Đăng nhập</button>
+                  </Link>
+                  <Link to="/register">
+                    <button className="btn btn-danger text-white">Đăng ký</button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -77,9 +144,9 @@ function Header() {
             width: 100%;
           }
           .hover-effect:hover {
-          background-color: white !important;
-          color: red !important;
-          border-color: red !important;
+            background-color: white !important;
+            color: red !important;
+            border-color: red !important;
           }
         `}
       </style>
