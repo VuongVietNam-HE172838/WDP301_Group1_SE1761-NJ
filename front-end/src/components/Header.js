@@ -5,11 +5,15 @@ import { FaUserCircle } from "react-icons/fa"; // Icon user
 
 function Header() {
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [accountDetail, setAccountDetail] = useState(
+    JSON.parse(localStorage.getItem("accountDetail")) || null
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleStorageChange = () => {
       setToken(localStorage.getItem("token"));
+      setAccountDetail(JSON.parse(localStorage.getItem("accountDetail")) || null);
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -23,6 +27,7 @@ function Header() {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("accountDetail");
     setToken(null);
+    setAccountDetail(null);
     navigate("/login");
   };
 
@@ -75,7 +80,8 @@ function Header() {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <FaUserCircle className="fs-4 me-2" /> Tài khoản
+                    <FaUserCircle className="fs-4 me-2" />
+                    {accountDetail?.full_name || "Tài khoản"}
                   </button>
 
                   {/* Dropdown Menu */}
