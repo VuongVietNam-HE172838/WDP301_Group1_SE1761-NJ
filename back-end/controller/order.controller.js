@@ -103,4 +103,80 @@ exports.findOrder = async (req, res) => {
     }
 }
 
+exports.updateOrder = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const updatedOrder = await order.findByIdAndUpdate (id, req.body , {new: true});
+        res.status(200).json(updatedOrder);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+exports.deleteOrder = async (req, res) => {
+    const id = req.params.id;
+    try {
+        await order.findByIdAndDelete(id);
+        res.status(200).json({message: 'Deleted successfully'});
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+exports.createDish = async (req, res) => {
+    const {name, price, description, image} = req.body;
+    try {
+        const newDish = new dish({
+        name,
+        price,
+        description,
+        image
+        });
+        await newDish.save();
+        res.status(201).json(newDish);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+    };
+
+exports.sendDish = async (req, res) => {
+    try {
+        const dishes = await dish.find();
+        res.status(200).json(dishes);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+exports.findDish = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const oneDish = await dish.findById
+        (id);
+        res.status(200).json(oneDish);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+exports.updateDish = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const updatedDish = await dish.findByIdAndUpdate (id, req.body , {new: true});
+        res.status(200).json(updatedDish);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+}
+
+
+
     
