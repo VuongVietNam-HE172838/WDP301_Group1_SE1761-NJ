@@ -15,7 +15,10 @@ const db = {
   Account,
   AccountDetail,
   Role,
-  UsedToken
+  UsedToken,
+  dish,
+  order,
+  bill
 };
 
 db.connectDB = async () => {
