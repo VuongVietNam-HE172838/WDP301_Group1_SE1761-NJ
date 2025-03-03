@@ -9,7 +9,8 @@ const Role = require('./role');
 
 const createDatabase = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/WDP");
+    // await mongoose.connect("mongodb+srv://quanpdhe170415:aEjUnpW2mk3nqVYX@wdp.qcw4k.mongodb.net/wdp?retryWrites=true&w=majority&appName=Cluster0");
+    await mongoose.connect("mongodb://localhost:27017/wdp");
     console.log('MongoDB connected');
 
     // Create collections
@@ -36,7 +37,7 @@ const createDatabase = async () => {
       role_id: adminRole._id,
       password: hashedPassword,
       start_working: new Date(),
-      is_working: true
+      isVerified: true
     });
     await adminAccount.save();
 

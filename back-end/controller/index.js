@@ -1,8 +1,6 @@
 const authenController = require('./authen.controller');
 const otpController = require('./otp.controller');
-const orderController = require('./order.controller');
-const changepassController = require('./changepass.controller');
-
+const paymentController = require('./payment.controller');
 module.exports = {
-  authenController, orderController, changepassController
+  authenController, otpController, paymentController
 };
