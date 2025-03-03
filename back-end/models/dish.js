@@ -6,13 +6,14 @@ const dishSchema = new Schema({
   category_id: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
   description: { type: String, required: true },
   optional: {
-    size: { type: String },
-    price: { type: Number }
+    size: { type: String, optional: true },
+    price: { type: Number, optional: true }
   },
   created_at: { type: Date, default: Date.now },
   created_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: true },
   updated_at: { type: Date, default: Date.now },
-  updated_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: true }
+  updated_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: true },
+  img: {type: String}
 });
 
 const Dish = mongoose.model('Dish', dishSchema);
