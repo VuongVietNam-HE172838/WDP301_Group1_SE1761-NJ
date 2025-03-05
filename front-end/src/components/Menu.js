@@ -11,7 +11,7 @@ const Menu = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:9999/menu');
+                const response = await axios.get('http://localhost:9999/menu/menu');
                 setCategories(response.data);
                 if (response.data.length > 0) {
                     setSelectedCategory(response.data[0]._id); // Mặc định chọn category đầu tiên
