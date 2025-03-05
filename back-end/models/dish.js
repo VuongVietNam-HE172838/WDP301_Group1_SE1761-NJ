@@ -13,8 +13,7 @@ const dishSchema = new Schema({
   created_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: true },
   updated_at: { type: Date, default: Date.now },
   updated_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: true },
-  img: {type: String},
-  quantity: {type: Number}
+  img: {type: String}
 });
 
 const Dish = mongoose.model('Dish', dishSchema);

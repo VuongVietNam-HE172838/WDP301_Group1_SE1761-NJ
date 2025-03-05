@@ -6,10 +6,6 @@ const bcrypt = require('bcryptjs');
 const Account = require('./account');
 const AccountDetail = require('./accountDetail');
 const Role = require('./role');
-const Menu = require('./menu');
-const Blog = require('./blog');
-const Category = require('./category');
-const Dish = require('./dish');
 
 const createDatabase = async () => {
   try {
@@ -20,10 +16,7 @@ const createDatabase = async () => {
     await Account.createCollection();
     await AccountDetail.createCollection();
     await Role.createCollection();
-    await Blog.createCollection();
-    await Category.createCollection();
-    await Dish.createCollection();
-    await Menu.createCollection();
+
     // Insert roles
     const roles = [
       { name: 'ADMIN' },
