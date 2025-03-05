@@ -4,7 +4,7 @@ const router = express.Router();
 const authenRoute = require('./authen.route');
 const orderRoute = require('./order.route');
 const changepassRoute = require('./changepass.route');
-const menuRoute = require('./menu.routes');
+const menuRoute = require('./menu.route');
 const blogRoutes = require('./blog.route');
 
 
