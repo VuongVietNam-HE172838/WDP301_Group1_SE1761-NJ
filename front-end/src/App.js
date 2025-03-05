@@ -12,7 +12,7 @@ import ForgetPassword from './components/ForgetPassword';
 import VerifyEmail from './components/VerifyEmail';
 import './App.css';
 import Intro from './components/Intro';
-
+import QR from './components/QR';
 const App = () => {
   return (
 
@@ -29,6 +29,8 @@ const App = () => {
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
           <Route path="/verify-email" element={<VerifyEmail/>} />
+          <Route path="/payments" element={<QR/>} />
+
         </Routes>
         <Footer />
       </div>
