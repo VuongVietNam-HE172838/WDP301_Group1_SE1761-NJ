@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import axios from 'axios';
 import { motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+
 const BlogSlider = () => {
     const [blogArticles, setBlogArticles] = useState([]);
 
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await axios.get('http://localhost:9999/blog');
+                const response = await axios.get('http://localhost:9999/api/blog');
                 setBlogArticles(response.data);
             } catch (error) {
                 console.error("Error fetching blogs:", error);
