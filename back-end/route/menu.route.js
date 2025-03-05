@@ -8,4 +8,7 @@ router.get('/', menuController.getCategories);
 // Route để lấy dishes theo category
 router.get('/:categoryId/dishes', menuController.getDishesByCategory);
 
+// Route để lấy tất cả dishes
+router.get('/dishes', menuController.getAllDishes);
+
 module.exports = router;

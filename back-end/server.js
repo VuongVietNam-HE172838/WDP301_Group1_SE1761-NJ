@@ -5,6 +5,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const routes = require('./route');
 const db = require('./models'); // Import db from models
+const menuRoutes = require('./route/menu.route'); // Import menu routes
 
 app.use(cors({
   origin: '*',
@@ -13,6 +14,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use('/api', routes);
+app.use('/menu', menuRoutes); // Use menu routes
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
