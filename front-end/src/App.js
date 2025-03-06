@@ -13,6 +13,9 @@ import ForgetPassword from './components/ForgetPassword';
 import VerifyEmail from './components/VerifyEmail';
 import './App.css';
 import Intro from './components/Intro';
+import AdminDashboard from './components/AdminDashboard';
+import AccountList from './components/AccountList';
+import BillHistory from './components/BillHisory';
 
 const App = () => {
   return (
@@ -30,6 +33,10 @@ const App = () => {
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
           <Route path="/verify-email" element={<VerifyEmail/>} />
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route path="verify-accounts" element={<AccountList />} />
+            <Route path="billing" element={<BillHistory />} />
+          </Route>
         </Routes>
         <Footer />
       </div>
