@@ -1,0 +1,74 @@
+/* Định dạng sidebar */
+#sidebar {
+    width: 250px;
+    height: 100vh;
+    background: #f1f3f5; /* Màu nền sáng hơn */
+    color: #333;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding-top: 20px;
+    border-right: 2px solid #ccc; /* Border phải rõ hơn */
+    margin-left: 50px;
+}
+
+/* Tiêu đề sidebar */
+#sidebar h4 {
+    color: #d9534f;
+    font-weight: bold;
+    text-align: center;
+}
+.navbar {
+    z-index: 1100; /* Đảm bảo thanh navbar không bị che */
+}
+/* Định dạng các mục trong sidebar */
+#sidebar .nav-link {
+    color: #333 !important; /* Màu chữ mặc định */
+    font-weight: 500;
+    padding: 10px 15px;
+    border: 1px solid #ccc; /* Thêm viền rõ hơn */
+    background-color: #ffffff; /* Nền trắng nhẹ để khác background */
+    transition: all 0.3s;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    display: block;
+    text-align: left;
+    width: 80%;
+}
+
+/* Hover */
+#sidebar .nav-link:hover {
+    background-color: #e9ecef;
+    color: #d9534f !important;
+    border-color: #d9534f;
+}
+
+/* Active */
+#sidebar .nav-link.active {
+    background-color: #d9534f !important;
+    color: white !important;
+    font-weight: bold;
+    border-color: #d9534f; /* Border màu đỏ giống nền */
+}
+
+/* Điều chỉnh layout chính */
+main {
+    margin-left: 250px; /* Đẩy nội dung chính sang phải, bằng đúng chiều rộng sidebar */
+    padding: 20px;
+    min-height: 100vh;
+    background: #f8f9fa;
+}
+
+/* Định dạng card */
+.card {
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-radius: 10px;
+}
+
+.card h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}

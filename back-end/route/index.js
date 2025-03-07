@@ -11,6 +11,8 @@ router.use('/authen', authenRoute);
 router.use('/menu', menuRoute);
 // router.use('/order', orderRoute);
 // router.use('/changepass', changepassRoute);
-router.use('/blogs', blogRoute);
+router.use('/blog', blogRoute);
 
 module.exports = router;
+
+
