@@ -36,7 +36,7 @@ const createDatabase = async () => {
       role_id: adminRole._id,
       password: hashedPassword,
       start_working: new Date(),
-      is_working: true
+      isVerified: true
     });
     await adminAccount.save();
 
