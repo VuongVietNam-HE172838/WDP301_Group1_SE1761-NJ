@@ -32,7 +32,7 @@ function Header() {
   };
 
   const navItems = ["TRANG CHỦ", "MENU", "ĐẶT HÀNG", "GIỚI THIỆU", "TIN TỨC"];
-  const navItemLinks = ["home", "menu", "order", "introduction", "blog"];
+  const navItemLinks = ["home", "menu", "order", "introduction", "blogs"];
 
   return (
     <>

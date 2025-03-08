@@ -13,6 +13,8 @@ import VerifyEmail from './components/VerifyEmail';
 import './App.css';
 import Intro from './components/Intro';
 import Blog from './components/Blog';
+import BlogDetail from './components/BlogDetail';
+
 const App = () => {
   return (
 
@@ -29,7 +31,8 @@ const App = () => {
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
           <Route path="/verify-email" element={<VerifyEmail/>} />
-          <Route path="/blog" element={<Blog />} />
+          <Route path="/blogs" element={<Blog />} />
+          <Route path="/blogs/:id" element={<BlogDetail />} />
         </Routes>
         <Footer />
       </div>
