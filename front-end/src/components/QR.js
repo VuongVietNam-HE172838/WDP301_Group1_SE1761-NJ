@@ -1,42 +1,48 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const QRComponent = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const { cartItems, billId } = location.state || { cartItems: [], billId: "" };
 
-  const [cartItems, setCartItems] = useState([
-    {
-      name: "Đùi Gà Quay",
-      optional: {
-        size: "Lớn",
-        price: 75000,
-      },
-      img: "https://static.kfcvietnam.com.vn/images/items/lg/BJ.jpg?v=gMXG84",
-      quantity: 1,
-      note: ""
-    },
-    {
-      name: "Pepsi",
-      optional: {
-        size: "Vừa",
-        price: 19000,
-      },
-      img: "https://static.kfcvietnam.com.vn/images/items/lg/PEPSI_CAN.jpg?v=gMXG84",
-      quantity: 1,
-      note: ""
-    },
-    {
-        name: "Burger Zinger",
-        optional: {
-          size: "Vừa",
-          price: 54000,
-        },
-        img: "https://static.kfcvietnam.com.vn/images/items/lg/Burger-Zinger.jpg?v=gMXG84",
-        quantity: 1,
-        note: ""
-    }
-  ]);
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  useEffect(() => {
+    const calculateTotalAmount = () => {
+      return cartItems.reduce((total, item) => total + item.optional.price * item.quantity, 0);
+    };
+    setTotalAmount(calculateTotalAmount());
+  }, [cartItems]);
+
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/payments/checkstatus/${billId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isPaid) {
+            navigate("/success");
+          }
+        }
+      } catch (error) {
+        console.error("Error checking payment status:", error);
+      }
+    };
+
+    const intervalId = setInterval(checkPaymentStatus, 10000); // Check every 30 seconds
+
+    // Stop checking after 10 minutes
+    const timeoutId = setTimeout(() => {
+      clearInterval(intervalId);
+    }, 600000); // 10 minutes
+
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+    };
+  }, [billId, navigate]);
 
   const formatAmount = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -45,28 +51,12 @@ const QRComponent = () => {
     }).format(amount);
   };
 
-  const updateQuantity = (index, change) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item, i) =>
-        i === index ? { ...item, quantity: Math.max(1, item.quantity + change) } : item
-      )
-    );
-  };
-
-  const updateNote = (index, note) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item, i) => (i === index ? { ...item, note } : item))
-    );
-  };
-
-  const totalAmount = cartItems.reduce((acc, item) => acc + item.optional.price * item.quantity, 0);
-
   const bank = {
-    BANK_ID: "TpBank",
-    ACCOUNT_NO: "41110316698",
+    BANK_ID: "MbBank",
+    ACCOUNT_NO: "0889516992",
     TEMPLATE: "compact2",
     AMOUNT: totalAmount,
-    DESCRIPTION: `Thanh toán đơn hàng` ,
+    DESCRIPTION: `Thanh toán đơn hàng ${billId}`,
     ACCOUNT_NAME: "FOODTRIPVNS",
   };
 
@@ -89,24 +79,15 @@ const QRComponent = () => {
                     <img src={item.img} alt={item.name} className="img-fluid rounded mb-3" style={{ maxWidth: "150px" }} />
                     <p><strong>Kích thước:</strong> {item.optional.size}</p>
                     <p><strong>Giá:</strong> {formatAmount(item.optional.price)}</p>
-                    <div className="d-flex align-items-center mb-3">
-                      <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, -1)}>-</button>
-                      <span className="mx-3">{item.quantity}</span>
-                      <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, 1)}>+</button>
-                    </div>
+                    <p><strong>Số lượng:</strong> {item.quantity}</p>
                     <p><strong>Tổng:</strong> {formatAmount(item.optional.price * item.quantity)}</p>
-                    <textarea
-                      className="form-control"
-                      placeholder="Ghi chú"
-                      value={item.note}
-                      onChange={(e) => updateNote(index, e.target.value)}
-                    ></textarea>
+                    <p><strong>Ghi chú:</strong> {item.note}</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <h3 className="mt-3">Tổng tiền: {formatAmount(bank.AMOUNT)}</h3>
+          <h3 className="mt-3">Tổng tiền: {formatAmount(totalAmount)}</h3>
         </div>
 
         {/* Mã QR thanh toán */}
