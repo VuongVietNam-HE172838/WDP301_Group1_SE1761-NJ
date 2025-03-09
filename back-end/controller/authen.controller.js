@@ -69,8 +69,16 @@ exports.login = async (req, res) => {
       { account_id: account._id },
       { refresh_token: refreshToken }
     );
+    let accountDetail;
+    accountDetail = await AccountDetail.findOne({ account_id: account._id });
+    const role = await Role.findById(account.role_id);
 
-    res.json({ token, refreshToken });
+    res.json({
+      token,
+      refreshToken,
+      accountDetail: { full_name: accountDetail.full_name, role: role.name },
+    });
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");

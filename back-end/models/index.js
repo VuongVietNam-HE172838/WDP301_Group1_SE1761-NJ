@@ -5,6 +5,9 @@ const Account = require('./account');
 const AccountDetail = require('./accountDetail');
 const Role = require('./role');
 const UsedToken = require('./usedToken');
+const dish = require('./dish');
+const order = require('./order');
+const bill = require('./bill');
 
 mongoose.Promise = global.Promise;
 
@@ -12,7 +15,10 @@ const db = {
   Account,
   AccountDetail,
   Role,
-  UsedToken
+  UsedToken,
+  dish,
+  order,
+  bill
 };
 
 db.connectDB = async () => {

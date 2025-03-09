@@ -33,7 +33,7 @@ const createDatabase = async () => {
 
     // Insert admin account
     const adminAccount = new Account({
-      user_name: 'admin',
+      user_name: 'admin@gmail.com',
       role_id: adminRole._id,
       password: hashedPassword,
       start_working: new Date(),

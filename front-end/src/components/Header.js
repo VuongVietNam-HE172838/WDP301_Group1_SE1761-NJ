@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/LOGOBIG.png";
 import { FaUserCircle } from "react-icons/fa"; // Icon user
 
 function Header() {
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [accountDetail, setAccountDetail] = useState(
+    JSON.parse(localStorage.getItem("accountDetail")) || null
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleStorageChange = () => {
       setToken(localStorage.getItem("token"));
+      setAccountDetail(
+        JSON.parse(localStorage.getItem("accountDetail")) || null
+      );
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -23,11 +29,14 @@ function Header() {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("accountDetail");
     setToken(null);
+    setAccountDetail(null);
     navigate("/login");
   };
 
   const navItems = ["TRANG CHỦ", "MENU", "ĐẶT HÀNG", "GIỚI THIỆU", "TIN TỨC"];
-  const navItemLinks = ["home", "menu", "order", "introduction", "blog"];
+  const navItemLinks = ["home", "menu", "order", "introduction", "blogs"];
+
+  const location = useLocation();
 
   return (
     <>
@@ -35,7 +44,12 @@ function Header() {
         <div className="container">
           {/* Logo */}
           <Link className="navbar-brand" to="/">
-            <img src={logo} alt="Company logo" width="80" className="d-inline-block align-top" />
+            <img
+              src={logo}
+              alt="Company logo"
+              width="80"
+              className="d-inline-block align-top"
+            />
           </Link>
 
           {/* Toggle Button for Mobile */}
@@ -56,7 +70,14 @@ function Header() {
             <ul className="navbar-nav mx-auto gap-4">
               {navItems.map((item, index) => (
                 <li className="nav-item" key={index}>
-                  <Link className="nav-link fw-semibold text-dark position-relative" to={`/${navItemLinks[index]}`}>
+                  <Link
+                    className={`nav-link fw-semibold text-dark position-relative ${
+                      location.pathname === `/${navItemLinks[index]}`
+                        ? "active"
+                        : ""
+                    }`}
+                    to={`/${navItemLinks[index]}`}
+                  >
                     {item}
                   </Link>
                 </li>
@@ -75,11 +96,15 @@ function Header() {
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <FaUserCircle className="fs-4 me-2" /> Tài khoản
+                    <FaUserCircle className="fs-4 me-2" />
+                    {accountDetail?.full_name || "Tài khoản"}
                   </button>
 
                   {/* Dropdown Menu */}
-                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                  <ul
+                    className="dropdown-menu dropdown-menu-end"
+                    aria-labelledby="dropdownMenuButton"
+                  >
                     <li>
                       <Link className="dropdown-item" to="/profile">
                         Chi tiết Profile
@@ -99,7 +124,10 @@ function Header() {
                       <hr className="dropdown-divider" />
                     </li>
                     <li>
-                      <button className="dropdown-item text-danger" onClick={handleLogout}>
+                      <button
+                        className="dropdown-item text-danger"
+                        onClick={handleLogout}
+                      >
                         Đăng xuất
                       </button>
                     </li>
@@ -108,10 +136,14 @@ function Header() {
               ) : (
                 <>
                   <Link to="/login">
-                    <button className="btn btn-outline-secondary text-dark hover-effect">Đăng nhập</button>
+                    <button className="btn btn-outline-secondary text-dark hover-effect">
+                      Đăng nhập
+                    </button>
                   </Link>
                   <Link to="/register">
-                    <button className="btn btn-danger text-white">Đăng ký</button>
+                    <button className="btn btn-danger text-white">
+                      Đăng ký
+                    </button>
                   </Link>
                 </>
               )}
@@ -137,6 +169,14 @@ function Header() {
             transition: all 0.3s ease-in-out;
             transform: translateX(-50%);
           }
+            .nav-link.active {
+            color: red !important;
+          }
+
+            .nav-link.active::after {
+            width: 100%;
+          }
+
           .nav-link:hover {
             color: red !important;
           }
