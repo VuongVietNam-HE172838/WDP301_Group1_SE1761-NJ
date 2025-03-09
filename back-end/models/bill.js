@@ -11,7 +11,7 @@ const billSchema = new Schema({
       price: { type: Number, required: true },
     },
   ],
-  delivery_method: { type: String, required: true },
+  delivery_method: { type: String, enum: ['take away', 'dine in'], required: true },
   delivery_time: { type: Date, required: true },
   isPaid: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },

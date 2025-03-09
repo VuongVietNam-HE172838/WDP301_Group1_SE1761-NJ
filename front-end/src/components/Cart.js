@@ -7,7 +7,7 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
 
     const handleOrder = async () => {
         try {
-            const response = await axios.post('http://localhost:9999/api/order/create', {
+            const response = await axios.post('http://localhost:9999/api/order/createOrder', {
                 items: cartItems,
                 order_type: 'online',
                 total_price: totalPrice
