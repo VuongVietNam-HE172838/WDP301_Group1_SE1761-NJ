@@ -3,8 +3,14 @@ const Dish = require('../models/dish');
 
 exports.callBackPayment = async (req, res) => {
     const data = req.body;
-    const billId = data.payment.content;
-
+    const content = data.payment.content;
+    const billIdMatch = content.match(/[a-f0-9]{24}/); // Tìm chuỗi 24 ký tự hexa (MongoDB ObjectId)
+    const billId = billIdMatch ? billIdMatch[0] : null;
+    
+    if (!billId) {
+        return res.status(400).json({ message: 'Invalid payment content format' });
+    }
+    
     try {
         // Find the bill by ID
         const bill = await Bill.findById(billId);

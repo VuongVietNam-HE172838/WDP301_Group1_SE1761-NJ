@@ -13,7 +13,6 @@ import VerifyEmail from './components/VerifyEmail';
 import PaymentSuccess from './components/PaymentSuccess';
 import './App.css';
 import Intro from './components/Intro';
-import AdminDashboard from './components/AdminDashboard';
 import AccountList from './components/AccountList';
 import BillHistory from './components/BillHisory';
 import Blog from './components/Blog';
@@ -33,6 +32,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgetpassword" element={<ForgetPassword />} />
           <Route path="/home" element={<About />} />
+          <Route path="/" element={<About />} />
           <Route path="/blog" element={<BlogSlider />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/menu" element={<Menu />} />
