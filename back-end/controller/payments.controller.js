@@ -1,6 +1,6 @@
 const Bill = require('../models/bill');
 const Dish = require('../models/dish');
-
+const Order = require('../models/order');
 exports.callBackPayment = async (req, res) => {
     const data = req.body;
     const content = data.payment.content;
@@ -39,34 +39,43 @@ exports.callBackPayment = async (req, res) => {
 };
 
 exports.createBill = async (req, res) => {
+  try {
+    const { cartItems, deliveryMethod, deliveryTime, orderType } = req.body;
+    const userId = req.user.accountId;
 
-    try {
-        const { cartItems, deliveryMethod } = req.body;
-        const userId = req.user.accountId;
+    const totalAmount = cartItems.reduce((total, item) => total + item.optional.price * item.quantity, 0);
 
-        const totalAmount = cartItems.reduce((total, item) => total + item.optional.price * item.quantity, 0);
+    const items = cartItems.map(item => ({
+      item_id: item.id,
+      quantity: item.quantity,
+      price: item.optional.price,
+    }));
 
-        const items = cartItems.map(item => ({
-            item_id: item.id,
-            quantity: item.quantity,
-            price: item.optional.price,
-        }));
+    const newBill = new Bill({
+      user_id: userId,
+      total_amount: totalAmount,
+      items,
+      delivery_method: deliveryMethod,
+      delivery_time: new Date(deliveryTime),
+    });
 
-        const newBill = new Bill({
-            user_id: userId,
-            total_amount: totalAmount,
-            items,
-            delivery_method: deliveryMethod,
-        });
+    await newBill.save();
 
-        await newBill.save();
+    const newOrder = new Order({
+      status: 'pending',
+      bill: newBill._id,
+      order_by: userId,
+      order_type: orderType, // Set order type
+    });
 
-        res.status(201).json({ message: 'Bill created successfully', bill: newBill });
-    } catch (error) {
-        console.error('Error creating bill:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-}
+    await newOrder.save();
+
+    res.status(201).json({ message: 'Bill and order created successfully', bill: newBill, order: newOrder });
+  } catch (error) {
+    console.error('Error creating bill and order:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 exports.checkPaymentStatus = async (req, res) => {
     const { billId } = req.params;

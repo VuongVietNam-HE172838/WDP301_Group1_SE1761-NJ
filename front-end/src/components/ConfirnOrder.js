@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,7 +14,7 @@ const ConfirmOrder = () => {
       name: "Đùi Gà Quay",
       optional: {
         size: "Lớn",
-        price: 75000,
+        price: 2000,
       },
       img: "https://static.kfcvietnam.com.vn/images/items/lg/BJ.jpg?v=gMXG84",
       quantity: 1,
@@ -23,27 +25,31 @@ const ConfirmOrder = () => {
       name: "Pepsi",
       optional: {
         size: "Vừa",
-        price: 19000,
+        price: 1000,
       },
       img: "https://static.kfcvietnam.com.vn/images/items/lg/PEPSI_CAN.jpg?v=gMXG84",
       quantity: 1,
       note: ""
     },
     {
-        id: "67c4992bad3ed5902ba34c6b",
-        name: "Burger Zinger",
-        optional: {
-          size: "Vừa",
-          price: 54000,
-        },
-        img: "https://static.kfcvietnam.com.vn/images/items/lg/Burger-Zinger.jpg?v=gMXG84",
-        quantity: 1,
-        note: ""
+      id: "67c4992bad3ed5902ba34c6b",
+      name: "Burger Zinger",
+      optional: {
+        size: "Vừa",
+        price: 2000,
+      },
+      img: "https://static.kfcvietnam.com.vn/images/items/lg/Burger-Zinger.jpg?v=gMXG84",
+      quantity: 1,
+      note: ""
     }
   ]);
   
   const [userInfo, setUserInfo] = useState({ full_name: "", phone_number: "", address: "" });
   const [deliveryMethod, setDeliveryMethod] = useState("Tự đến nhận hàng");
+
+  // Set initial delivery time to 16 minutes from now
+  const initialDeliveryTime = new Date(new Date().getTime() + 16 * 60000);
+  const [deliveryTime, setDeliveryTime] = useState(initialDeliveryTime);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -116,13 +122,13 @@ const ConfirmOrder = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ cartItems, deliveryMethod }),
+        body: JSON.stringify({ cartItems, deliveryMethod, deliveryTime, orderType: 'online' }), // Set order type to 'online'
       });
 
       if (response.ok) {
         const data = await response.json();
         toast.success("Hóa đơn đã được tạo thành công!");
-        navigate("/payments", { state: { cartItems, deliveryMethod, billId: data.bill._id } });
+        navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.bill._id } });
       } else {
         toast.error("Có lỗi xảy ra khi tạo hóa đơn!");
       }
@@ -192,6 +198,23 @@ const ConfirmOrder = () => {
                 <option value="Giao hàng">Giao hàng</option>
               </select>
             </div>
+
+            <div className="mb-3">
+              <label className="form-label">Thời gian nhận hàng</label>
+              <DatePicker
+                selected={deliveryTime}
+                onChange={(date) => setDeliveryTime(date)}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
+                minDate={new Date()}
+                minTime={new Date().getDate() === deliveryTime.getDate() ? initialDeliveryTime : undefined}
+                maxTime={new Date().setHours(23, 45)}
+                className="form-control"
+              />
+            </div>
+
           </form>
           <button className="btn btn-primary mt-3" onClick={handlePayment}>Thanh toán</button>
         </div>
