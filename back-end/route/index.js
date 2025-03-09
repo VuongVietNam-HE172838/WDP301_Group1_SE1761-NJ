@@ -17,4 +17,6 @@ router.use('/blogs', blogRoute);
 router.use('/account', accountRoute)
 router.use('/payments', paymentRoute);
 router.use('/admin', adminRoute);
+router.use('/blog', blogRoute);
+
 module.exports = router;

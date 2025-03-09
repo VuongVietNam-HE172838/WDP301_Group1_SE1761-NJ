@@ -10,9 +10,9 @@ const dishSchema = new Schema({
     price: { type: Number, optional: true }
   },
   created_at: { type: Date, default: Date.now },
-  created_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: true },
+  created_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: false },
   updated_at: { type: Date, default: Date.now },
-  updated_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: true },
+  updated_by: { type: Schema.Types.ObjectId, ref: 'AccountDetail', required: false },
   img: {type: String},
   quantity: {type: Number}
 });

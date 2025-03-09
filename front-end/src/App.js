@@ -20,6 +20,8 @@ import Blog from './components/Blog';
 import BlogDetail from './components/BlogDetail';
 import QR from './components/QR';
 import ConfirmOrder from './components/ConfirnOrder';
+import BlogSlider from './components/BlogSlider';
+import AdminDashboard from './components/AdminDashboard';
 const App = () => {
   return (
 
@@ -31,7 +33,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgetpassword" element={<ForgetPassword />} />
           <Route path="/home" element={<About />} />
-          <Route path="/" element={<About />} />
+          <Route path="/blog" element={<BlogSlider />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
@@ -46,6 +48,7 @@ const App = () => {
           <Route path="/confirm-order" element={<ConfirmOrder />} />
           <Route path='*' element={<h1>Not Found</h1>} />
           <Route path='/success' element={<PaymentSuccess/>} />
+
         </Routes>
         <Footer />
       </div>
