@@ -13,10 +13,15 @@ import VerifyEmail from './components/VerifyEmail';
 import PaymentSuccess from './components/PaymentSuccess';
 import './App.css';
 import Intro from './components/Intro';
+import AdminDashboard from './components/AdminDashboard';
+import AccountList from './components/AccountList';
+import BillHistory from './components/BillHisory';
 import Blog from './components/Blog';
 import BlogDetail from './components/BlogDetail';
 import QR from './components/QR';
 import ConfirmOrder from './components/ConfirnOrder';
+import BlogSlider from './components/BlogSlider';
+import AdminDashboard from './components/AdminDashboard';
 const App = () => {
   return (
 
@@ -28,17 +33,22 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgetpassword" element={<ForgetPassword />} />
           <Route path="/home" element={<About />} />
-          <Route path="/" element={<About />} />
+          <Route path="/blog" element={<BlogSlider />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
           <Route path="/verify-email" element={<VerifyEmail/>} />
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route path="verify-accounts" element={<AccountList />} />
+            <Route path="billing" element={<BillHistory />} />
+          </Route>
           <Route path="/blogs" element={<Blog />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/payments" element={<QR/>} />
           <Route path="/confirm-order" element={<ConfirmOrder />} />
-          {/* <Route path='*' element={<h1>Not Found</h1>} /> */}
+          <Route path='*' element={<h1>Not Found</h1>} />
           <Route path='/success' element={<PaymentSuccess/>} />
+
         </Routes>
         <Footer />
       </div>

@@ -29,7 +29,9 @@ const Menu = () => {
             if (!selectedCategory) return;
             try {
                 const response = await axios.get(`http://localhost:9999/menu/${selectedCategory}/dishes`);
-                setDishes(response.data);
+                // **Lọc những món ăn có quantity > 0**
+                const filteredDishes = response.data.filter(dish => parseInt(dish.quantity) > 0);
+                setDishes(filteredDishes);
             } catch (error) {
                 console.error("Error fetching dishes:", error);
             }
@@ -38,9 +40,9 @@ const Menu = () => {
     }, [selectedCategory]);
 
     return (
-        <Container >
+        <Container>
             {/* Category List */}
-            <Row className="justify-content-center my-3 pd" style={{paddingTop: '50px', paddingBottom: '70px'}}>
+            <Row className="justify-content-center my-3" style={{ paddingTop: '50px', paddingBottom: '70px' }}>
                 {categories.map(category => (
                     <Col xs={3} md={2} key={category._id} className="text-center">
                         <Button
@@ -59,19 +61,27 @@ const Menu = () => {
                 {dishes.length > 0 ? (
                     dishes.map(dish => (
                         <Col md={4} key={dish._id} className="mb-4">
-                            <Card className="shadow-sm border-0 rounded" style={{ borderRadius: '15px' }}>
-                                <Card.Img 
-                                    variant="top" 
-                                    src={dish.img || 'https://via.placeholder.com/150'} 
+                            <Card style={{
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+                                transition: 'transform 0.3s ease-in-out',
+                                cursor: 'pointer'
+                            }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                                <Card.Img
+                                    variant="top"
+                                    src={dish.img || 'https://via.placeholder.com/150'}
                                     alt={dish.name}
-                                    onError={(e) => e.target.src = 'https://via.placeholder.com/150'} 
+                                    onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
                                     style={{ height: '400px', objectFit: 'cover', borderRadius: '15px 15px 0 0' }}
                                 />
                                 <Card.Body>
                                     <Card.Title className="fw-bold">{dish.name}</Card.Title>
                                     <Card.Text className="text-muted">{dish.description || 'Không có mô tả'}</Card.Text>
                                     <Card.Text className="fw-bold text-danger">
-                                        {dish.optional?.price ? dish.optional.price.toLocaleString() + ' đ' : 'N/A'}
+                                        {dish.optional?.price ? `${dish.optional.price.toLocaleString()} đ` : 'N/A'}
                                     </Card.Text>
                                     <Button variant="danger" className="w-100 fw-bold">Thêm</Button>
                                 </Card.Body>

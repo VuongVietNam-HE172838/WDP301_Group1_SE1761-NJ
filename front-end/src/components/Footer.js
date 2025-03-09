@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Container, Row, Col, Button, Modal, Form } from "react-bootstrap";
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import logo from "../assets/LOGOBIG.png";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Footer = () => {
   const [show, setShow] = useState(false);
