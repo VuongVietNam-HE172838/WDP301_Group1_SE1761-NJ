@@ -12,6 +12,7 @@ const billSchema = new Schema({
     },
   ],
   delivery_method: { type: String, required: true },
+  delivery_time: { type: Date, required: true },
   isPaid: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },
 });

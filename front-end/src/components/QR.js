@@ -18,9 +18,15 @@ const QRComponent = () => {
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
+      const token = localStorage.getItem("token");
       try {
-        const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/payments/checkstatus/${billId}`);
-        if (response.ok) {
+        const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/payments/checkstatus/${billId}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }); if (response.ok) {
           const data = await response.json();
           if (data.isPaid) {
             navigate("/success");
@@ -56,7 +62,7 @@ const QRComponent = () => {
     ACCOUNT_NO: "0889516992",
     TEMPLATE: "compact2",
     AMOUNT: totalAmount,
-    DESCRIPTION: `Thanh toán đơn hàng ${billId}`,
+    DESCRIPTION: `${billId}`,
     ACCOUNT_NAME: "FOODTRIPVNS",
   };
 
