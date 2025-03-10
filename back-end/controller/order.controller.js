@@ -6,7 +6,9 @@ const Account = require('../models/account');
 const createOrder = async (req, res) => {
     try {
         const { items, order_type, total_price } = req.body;
-        const user = await Account.findById(req.user._id).populate('role_id');
+        const user = req.user;
+
+        console.log('Creating order for user:', user);
 
         // Determine delivery method based on user role
         let delivery_method;
@@ -16,9 +18,11 @@ const createOrder = async (req, res) => {
             delivery_method = 'take away';
         }
 
+        console.log('Delivery method:', delivery_method);
+
         // Create a new bill
         const newBill = new Bill({
-            user_id: req.user._id,
+            user_id: user._id,
             total_amount: total_price,
             items: items.map(item => ({
                 item_id: item._id,
@@ -28,16 +32,26 @@ const createOrder = async (req, res) => {
             delivery_method,
             delivery_time: new Date()
         });
+
+        console.log('New bill:', newBill);
+
         await newBill.save();
+
+        console.log('Bill saved successfully');
 
         // Create a new order
         const newOrder = new Order({
             bill: newBill._id,
-            order_by: req.user._id,
+            order_by: user._id,
             order_type,
             status: 'not done'
         });
+
+        console.log('New order:', newOrder);
+
         await newOrder.save();
+
+        console.log('Order saved successfully');
 
         res.status(201).json({ message: 'Order created successfully', order: newOrder });
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer, toast } from "react-toastify";
@@ -8,42 +8,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 const ConfirmOrder = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([
-    {
-      id: "67b35e1c0a211a676bad5e1c",
-      name: "Đùi Gà Quay",
-      optional: {
-        size: "Lớn",
-        price: 2000,
-      },
-      img: "https://static.kfcvietnam.com.vn/images/items/lg/BJ.jpg?v=gMXG84",
-      quantity: 1,
-      note: ""
-    },
-    {
-      id: "67b35e7f0a211a676bad5e22",
-      name: "Pepsi",
-      optional: {
-        size: "Vừa",
-        price: 1000,
-      },
-      img: "https://static.kfcvietnam.com.vn/images/items/lg/PEPSI_CAN.jpg?v=gMXG84",
-      quantity: 1,
-      note: ""
-    },
-    {
-      id: "67c4992bad3ed5902ba34c6b",
-      name: "Burger Zinger",
-      optional: {
-        size: "Vừa",
-        price: 2000,
-      },
-      img: "https://static.kfcvietnam.com.vn/images/items/lg/Burger-Zinger.jpg?v=gMXG84",
-      quantity: 1,
-      note: ""
-    }
-  ]);
-  
+  const location = useLocation();
+  const { cartItems: initialCartItems, totalPrice } = location.state;
+  const [cartItems, setCartItems] = useState(initialCartItems);
+
   const [userInfo, setUserInfo] = useState({ full_name: "", phone_number: "", address: "" });
   const [deliveryMethod, setDeliveryMethod] = useState("Tự đến nhận hàng");
 
@@ -116,25 +84,25 @@ const ConfirmOrder = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/payments/create`, {
+      const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/order/createOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ cartItems, deliveryMethod, deliveryTime, orderType: 'online' }), // Set order type to 'online'
+        body: JSON.stringify({ items: cartItems, order_type: 'online', total_price: totalPrice }), // Set order type to 'online'
       });
 
       if (response.ok) {
         const data = await response.json();
-        toast.success("Hóa đơn đã được tạo thành công!");
-        navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.bill._id } });
+        toast.success("Đơn hàng đã được tạo thành công!");
+        navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill } });
       } else {
-        toast.error("Có lỗi xảy ra khi tạo hóa đơn!");
+        toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
       }
     } catch (error) {
-      console.error("Error creating bill:", error);
-      toast.error("Có lỗi xảy ra khi tạo hóa đơn!");
+      console.error("Error creating order:", error);
+      toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
     }
   };
 

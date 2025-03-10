@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const Account = require('../models/account');
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
@@ -9,8 +10,14 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    console.log('Decoded user:', decoded); // Add logging here
+    const user = await Account.findById(decoded._id).populate('role_id');
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not found, authorization denied' });
+    }
+
+    req.user = user;
+    console.log('Authenticated user:', user); // Add logging here
     next();
   } catch (err) {
     console.error('Token verification failed:', err.message); // Add logging here

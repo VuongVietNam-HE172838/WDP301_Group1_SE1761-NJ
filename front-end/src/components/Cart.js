@@ -1,24 +1,13 @@
 import React from 'react';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
+    const navigate = useNavigate();
     const totalPrice = cartItems.reduce((total, item) => total + (item.optional?.price || 0) * item.quantity, 0);
 
-    const handleOrder = async () => {
-        try {
-            const response = await axios.post('http://localhost:9999/api/order/createOrder', {
-                items: cartItems,
-                order_type: 'online',
-                total_price: totalPrice
-            });
-            alert('Order placed successfully!');
-            // Clear the cart after successful order
-            window.location.reload();
-        } catch (error) {
-            console.error('Error placing order:', error);
-            alert('Failed to place order. Please try again.');
-        }
+    const handleOrder = () => {
+        navigate('/confirm-order', { state: { cartItems, totalPrice } });
     };
 
     return (
