@@ -21,6 +21,7 @@ import QR from './components/QR';
 import ConfirmOrder from './components/ConfirnOrder';
 import AdminDashboard from './components/AdminDashboard';
 import ManageBlog from './components/ManageBlog';
+import Cart from './components/Cart';
 const App = () => {
   return (
 
@@ -47,6 +48,8 @@ const App = () => {
           <Route path="/blogs" element={<Blog />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/payments" element={<QR/>} />
+          <Route path="/cart" element={<Cart />} />
+
           <Route path="/confirm-order" element={<ConfirmOrder />} />
           <Route path='*' element={<h1>Not Found</h1>} />
           <Route path='/success' element={<PaymentSuccess/>} />

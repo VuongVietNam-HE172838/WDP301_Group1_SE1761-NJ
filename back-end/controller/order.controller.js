@@ -1,182 +1,65 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const {order, bill, dish} = require('../models');
+const Order = require('../models/order');
+const Bill = require('../models/bill');
+const Dish = require('../models/dish');
+const Account = require('../models/account');
 
-exports.create = async (req, res) => {
-    const {order_id, total_price, created_by, method, customer_phone_num} = req.body;
+const createOrder = async (req, res) => {
     try {
-        const newBill = new bill({
-        order_id,
-        total_price,
-        created_by,
-        method,
-        customer_phone_num
+        const { items, order_type, total_price } = req.body;
+        const user = req.user;
+
+        console.log('Creating order for user:', user);
+
+        // Determine delivery method based on user role
+        let delivery_method;
+        if (user.role_id.name === 'STAFF') {
+            delivery_method = 'dine in';
+        } else {
+            delivery_method = 'take away';
+        }
+
+        console.log('Delivery method:', delivery_method);
+
+        // Create a new bill
+        const newBill = new Bill({
+            user_id: user._id,
+            total_amount: total_price,
+            items: items.map(item => ({
+                item_id: item._id,
+                quantity: item.quantity,
+                price: item.optional?.price || 0
+            })),
+            delivery_method,
+            delivery_time: new Date()
         });
+
+        console.log('New bill:', newBill);
+
         await newBill.save();
-        res.status(201).json(newBill);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-    };
 
-exports.findAll = async (req, res) => {
-    try {
-        const bills = await bill.find();
-        res.status(200).json(bills);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-};
+        console.log('Bill saved successfully');
 
-exports.findOne = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const oneBill = await bill.findById
-        (id);
-        res.status(200).json(oneBill);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.update = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const updatedBill = await bill.findByIdAndUpdate(id, req.body , {new: true});
-        res.status(200).json(updatedBill);
-    }
-    catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.delete = async (req, res) => {
-    const id = req.params.id;
-    try {
-        await bill.findByIdAndDelete(id);
-        res.status(200).json({message: 'Deleted successfully'});
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.createOrder = async (req, res) => {
-    const {order_id, dish_id, quantity} = req.body;
-    try {
-        const newOrder = new order({
-        order_id,
-        dish_id,
-        quantity
+        // Create a new order
+        const newOrder = new Order({
+            bill: newBill._id,
+            order_by: user._id,
+            order_type,
+            status: 'not done'
         });
+
+        console.log('New order:', newOrder);
+
         await newOrder.save();
-        res.status(201).json(newOrder);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-    };
 
-exports.sendOrder = async (req, res) => {
-    try {
-        const orders = await order.find();
-        res.status(200).json(orders);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.log('Order saved successfully');
+
+        res.status(201).json({ message: 'Order created successfully', order: newOrder });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).json({ message: 'Failed to create order', error });
     }
 };
 
-exports.findOrder = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const oneOrder = await order.findById
-        (id);
-        res.status(200).json(oneOrder);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.updateOrder = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const updatedOrder = await order.findByIdAndUpdate (id, req.body , {new: true});
-        res.status(200).json(updatedOrder);
-    }
-    catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.deleteOrder = async (req, res) => {
-    const id = req.params.id;
-    try {
-        await order.findByIdAndDelete(id);
-        res.status(200).json({message: 'Deleted successfully'});
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.createDish = async (req, res) => {
-    const {name, price, description, image} = req.body;
-    try {
-        const newDish = new dish({
-        name,
-        price,
-        description,
-        image
-        });
-        await newDish.save();
-        res.status(201).json(newDish);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-    };
-
-exports.sendDish = async (req, res) => {
-    try {
-        const dishes = await dish.find();
-        res.status(200).json(dishes);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.findDish = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const oneDish = await dish.findById
-        (id);
-        res.status(200).json(oneDish);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-exports.updateDish = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const updatedDish = await dish.findByIdAndUpdate (id, req.body , {new: true});
-        res.status(200).json(updatedDish);
-    }
-    catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-}
-
-
-
-    
+module.exports = {
+    createOrder
+};
