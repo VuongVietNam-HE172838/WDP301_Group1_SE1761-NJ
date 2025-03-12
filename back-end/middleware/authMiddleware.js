@@ -22,6 +22,11 @@ const authMiddleware = async (req, res, next) => {
 
     req.user = user;
     console.log('Authenticated user:', user);
+
+    if (req.path === '/staffOrders' && req.user.role_id.name !== 'STAFF') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
     next();
   } catch (err) {
     console.error('Token verification failed:', err.message);

@@ -6,24 +6,17 @@ const jwt = require('jsonwebtoken');
 
 const createOrder = async (req, res) => {
     try {
-        const { items, order_type, total_price } = req.body;
+        const { items, order_type, total_price, user_info, delivery_method, delivery_time } = req.body;
         const user = req.user;
 
         console.log('Creating order for user:', user);
 
-        // Determine delivery method based on user role
-        let delivery_method;
-        if (user.role_id.name === 'STAFF') {
-            delivery_method = 'dine in';
-        } else {
-            delivery_method = 'take away';
-        }
-
-        console.log('Delivery method:', delivery_method);
-
         // Create a new bill
         const newBill = new Bill({
             user_id: user._id,
+            customer_name: user_info.full_name,
+            customer_phone: user_info.phone_number,
+            customer_address: user_info.address,
             total_amount: total_price,
             items: items.map(item => ({
                 item_id: item._id,
@@ -31,7 +24,7 @@ const createOrder = async (req, res) => {
                 price: item.optional?.price || 0
             })),
             delivery_method,
-            delivery_time: new Date(),
+            delivery_time,
             isPaid: false // Ensure isPaid is false
         });
 
@@ -62,6 +55,16 @@ const createOrder = async (req, res) => {
     }
 };
 
+const getStaffOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({ order_type: 'counter' }).populate('bill');
+        res.status(200).json({ orders });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching staff orders', error });
+    }
+};
+
 module.exports = {
-    createOrder
+    createOrder,
+    getStaffOrders
 };
