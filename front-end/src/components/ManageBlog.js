@@ -5,7 +5,7 @@ const ManageBlog = () => {
     const [blogs, setBlogs] = useState([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [newBlog, setNewBlog] = useState({ title: "", content: "", img: "", create_at: "" });
+    const [newBlog, setNewBlog] = useState({ title: "", content: "", img: "" });
     const [editBlog, setEditBlog] = useState(null);
 
     useEffect(() => {
@@ -14,18 +14,21 @@ const ManageBlog = () => {
             .then(data => setBlogs(data))
             .catch(error => console.error("Error fetching blogs:", error));
     }, []);
+console.log(blogs);
 
     const handleAddBlog = () => {
+        const blogWithTimestamp = { ...newBlog, created_at: new Date().toISOString() };
+
         fetch("http://localhost:9999/api/blogs", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newBlog)
+            body: JSON.stringify(blogWithTimestamp)
         })
         .then(response => response.json())
         .then(data => {
             setBlogs([...blogs, data]);
             setShowAddModal(false);
-            setNewBlog({ title: "", content: "", img: "", create_at: "" });
+            setNewBlog({ title: "", content: "", img: "" });
         })
         .catch(error => console.error("Error adding blog:", error));
     };
@@ -46,11 +49,13 @@ const ManageBlog = () => {
     };
 
     const handleDeleteBlog = (id) => {
-        fetch(`http://localhost:9999/api/blogs/${id}`, { method: "DELETE" })
-        .then(() => {
-            setBlogs(blogs.filter(blog => blog._id !== id));
-        })
-        .catch(error => console.error("Error deleting blog:", error));
+        if (window.confirm("Are you sure you want to delete this blog?")) {
+            fetch(`http://localhost:9999/api/blogs/${id}`, { method: "DELETE" })
+            .then(() => {
+                setBlogs(blogs.filter(blog => blog._id !== id));
+            })
+            .catch(error => console.error("Error deleting blog:", error));
+        }
     };
 
     return (
@@ -61,7 +66,6 @@ const ManageBlog = () => {
                 Add Blog
             </Button>
 
-            {/* Table displaying blogs */}
             <Table striped bordered hover>
                 <thead>
                     <tr>
@@ -84,18 +88,19 @@ const ManageBlog = () => {
                                     "No Image"
                                 )}
                             </td>
-                            <td>{new Date(blog.create_at).toLocaleDateString("en-GB")}</td>
+                            <td>{blog.created_at ? new Date(blog.created_at).toLocaleDateString("en-GB") : "N/A"}</td>
                             <td>
-                                <Button variant="warning" className="mr-2" onClick={() => { setEditBlog(blog); setShowEditModal(true); }}>Edit</Button>
-                                <Button variant="danger" onClick={() => handleDeleteBlog(blog._id)}>Delete</Button>
+                                <div className="d-flex gap-2">
+                                    <Button variant="warning" onClick={() => { setEditBlog(blog); setShowEditModal(true); }}>Edit</Button>
+                                    <Button variant="danger" onClick={() => handleDeleteBlog(blog._id)}>Delete</Button>
+                                </div>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </Table>
 
-            {/* Add Blog Modal */}
-            <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
+            <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Add Blog</Modal.Title>
                 </Modal.Header>
@@ -113,15 +118,39 @@ const ManageBlog = () => {
                             <Form.Label>Image URL</Form.Label>
                             <Form.Control type="text" value={newBlog.img} onChange={(e) => setNewBlog({ ...newBlog, img: e.target.value })} />
                         </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Created At</Form.Label>
-                            <Form.Control type="date" value={newBlog.create_at} onChange={(e) => setNewBlog({ ...newBlog, create_at: e.target.value })} />
-                        </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setShowAddModal(false)}>Close</Button>
                     <Button variant="primary" onClick={handleAddBlog}>Add</Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Edit Blog</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {editBlog && (
+                        <Form>
+                            <Form.Group>
+                                <Form.Label>Title</Form.Label>
+                                <Form.Control type="text" value={editBlog.title} onChange={(e) => setEditBlog({ ...editBlog, title: e.target.value })} />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Content</Form.Label>
+                                <Form.Control as="textarea" rows={3} value={editBlog.content} onChange={(e) => setEditBlog({ ...editBlog, content: e.target.value })} />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Image URL</Form.Label>
+                                <Form.Control type="text" value={editBlog.img} onChange={(e) => setEditBlog({ ...editBlog, img: e.target.value })} />
+                            </Form.Group>
+                        </Form>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowEditModal(false)}>Close</Button>
+                    <Button variant="primary" onClick={handleEditBlog}>Save</Button>
                 </Modal.Footer>
             </Modal>
         </div>
