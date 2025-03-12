@@ -143,9 +143,9 @@ const ConfirmOrder = () => {
                     <p><strong>Kích thước:</strong> {item.optional.size}</p>
                     <p><strong>Giá:</strong> {formatAmount(item.optional.price)}</p>
                     <div className="d-flex align-items-center mb-3">
-                      <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, -1)}>-</button>
-                      <span className="mx-3">{item.quantity}</span>
-                      <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, 1)}>+</button>
+                      {/* <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, -1)}>-</button> */}
+                      <p><strong>Số lượng: </strong>{item.quantity}</p>
+                      {/* <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, 1)}>+</button> */}
                     </div>
                     <p><strong>Tổng:</strong> {formatAmount(item.optional.price * item.quantity)}</p>
                     <textarea

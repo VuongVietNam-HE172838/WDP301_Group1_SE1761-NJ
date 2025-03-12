@@ -8,6 +8,7 @@ const orderRoute = require('./order.route');
 const blogRoute = require('./blog.route');
 const paymentRoute = require('./payments.route');
 const accountRoute = require('./account.route');
+const cartRoute = require('./cart.route');
 
 router.use('/authen', authenRoute);
 router.use('/menu', menuRoute);
@@ -16,6 +17,6 @@ router.use('/blogs', blogRoute);
 router.use('/account', accountRoute);
 router.use('/payments', paymentRoute);
 router.use('/admin', adminRoute);
-
+router.use('/cart', cartRoute);
 
 module.exports = router;

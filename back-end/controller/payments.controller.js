@@ -21,7 +21,9 @@ exports.callBackPayment = async (req, res) => {
         // Update the isPaid status of the bill
         bill.isPaid = true;
         await bill.save();
-
+        const order = await Order.findOne({ bill: billId });
+        order.status = 'New order';
+        await order.save();
         // Update the quantity of each dish in the bill
         for (const item of bill.items) {
             const dish = await Dish.findById(item.item_id);
