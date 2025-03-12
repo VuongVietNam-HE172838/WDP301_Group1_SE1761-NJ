@@ -1,261 +1,178 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useEffect, useState } from 'react';
+import { Container, Row, Col, Button, Card, Accordion } from 'react-bootstrap';
+import axios from 'axios';
+import Cart from './Cart';
+import CartIcon from './CartIcon';
 
 const StaffOrder = () => {
-  const navigate = useNavigate();
-  const [menuItems, setMenuItems] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
-  const [userInfo, setUserInfo] = useState({ full_name: "", phone_number: "", address: "" });
-  const [deliveryMethod, setDeliveryMethod] = useState("Tự đến nhận hàng");
-  const [orders, setOrders] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [dishes, setDishes] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [cartItems, setCartItems] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [showCart, setShowCart] = useState(false);
 
-  // Set initial delivery time to 16 minutes from now
-  const initialDeliveryTime = new Date(new Date().getTime() + 16 * 60000);
-  const [deliveryTime, setDeliveryTime] = useState(initialDeliveryTime);
+    // Lấy danh sách categories từ MongoDB
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('http://localhost:9999/menu/menu');
+                setCategories(response.data);
+                if (response.data.length > 0) {
+                    setSelectedCategory(response.data[0]._id); // Mặc định chọn category đầu tiên
+                }
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      try {
-        const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/account/information`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUserInfo({
-            full_name: data.full_name || "",
-            phone_number: data.phone_number || "",
-            address: data.address || "",
-          });
+    // Lấy danh sách dishes theo categoryId
+    useEffect(() => {
+        const fetchDishes = async () => {
+            if (!selectedCategory) return;
+            try {
+                const response = await axios.get(`http://localhost:9999/menu/${selectedCategory}/dishes`);
+                // **Lọc những món ăn có quantity > 0**
+                const filteredDishes = response.data.filter(dish => parseInt(dish.quantity) > 0);
+                setDishes(filteredDishes);
+            } catch (error) {
+                console.error("Error fetching dishes:", error);
+            }
+        };
+        fetchDishes();
+    }, [selectedCategory]);
+
+    // Lấy danh sách orders
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const token = localStorage.getItem('token'); // Get the token from local storage
+                const response = await axios.get(`${process.env.REACT_APP_URL_API_BACKEND}/order/staffOrders`, {
+                    headers: {
+                        Authorization: `Bearer ${token}` // Include the token in the request headers
+                    }
+                });
+                setOrders(response.data.orders);
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        };
+        fetchOrders();
+    }, []);
+
+    const addToCart = (dish) => {
+        const existingItem = cartItems.find(item => item._id === dish._id);
+        if (existingItem) {
+            setCartItems(cartItems.map(item => item._id === dish._id ? { ...item, quantity: item.quantity + 1 } : item));
+        } else {
+            setCartItems([...cartItems, { ...dish, quantity: 1 }]);
         }
-      } catch (error) {
-        console.error("Error fetching user information:", error);
-      }
     };
-    fetchUserInfo();
-  }, []);
 
-  useEffect(() => {
-    const fetchMenuItems = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/menu`);
-        if (response.ok) {
-          const data = await response.json();
-          setMenuItems(data.items);
+    const removeFromCart = (id) => {
+        setCartItems(cartItems.filter(item => item._id !== id));
+    };
+
+    const updateCartItemQuantity = (id, quantity) => {
+        if (quantity <= 0) {
+            removeFromCart(id);
+        } else {
+            setCartItems(cartItems.map(item => item._id === id ? { ...item, quantity } : item));
         }
-      } catch (error) {
-        console.error("Error fetching menu items:", error);
-      }
     };
-    fetchMenuItems();
-  }, []);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      try {
-        const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/order/staffOrders`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setOrders(data.orders);
-        }
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      }
-    };
-    fetchOrders();
-  }, []);
+    const toggleCart = () => setShowCart(!showCart);
 
-  const formatAmount = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND"
-    }).format(amount);
-  };
+    return (
+        <Container fluid>
+            <Row>
+                {/* Orders List */}
+                <Col md={3} style={{ bottom: '0', overflowY: 'auto', backgroundColor: '#f8f9fa', padding: '20px', paddingTop:'50px', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
+                    <h5>Danh sách đơn hàng</h5>
+                    <Accordion>
+                        {orders.map(order => (
+                            <Accordion.Item eventKey={order._id} key={order._id}>
+                                <Accordion.Header>{order.bill.user_id.user_name} - {new Date(order.bill.createdAt).toLocaleString()}</Accordion.Header>
+                                <Accordion.Body>
+                                    <p><strong>Địa chỉ:</strong> {order.bill.customer_address}</p>
+                                    <p><strong>Số điện thoại:</strong> {order.bill.customer_phone}</p>
+                                    <p><strong>Phương thức giao hàng:</strong> {order.bill.delivery_method}</p>
+                                    <p><strong>Thời gian giao hàng:</strong> {order.bill.delivery_time}</p>
+                                    <p><strong>Tổng tiền:</strong> {order.bill.total_amount.toLocaleString()} đ</p>
+                                    <p><strong>Danh sách món:</strong></p>
+                                    <ul>
+                                        {order.bill.items.map(item => (
+                                            <li key={item.item_id}>{item.item_id.name} - Số lượng: {item.quantity} - Giá: {item.price.toLocaleString()} đ</li>
+                                        ))}
+                                    </ul>
+                                </Accordion.Body>
+                            </Accordion.Item>
+                        ))}
+                    </Accordion>
+                </Col>
+                {/* Main Content */}
+                <Col md={6}>
+                    {/* Category List */}
+                    <Row className="justify-content-center my-3" style={{ paddingTop: '50px' }}>
+                        {categories.map(category => (
+                            <Col xs={3} md={2} key={category._id} className="text-center">
+                                <Button
+                                    onClick={() => setSelectedCategory(category._id)}
+                                    className={`w-100 py-2 ${selectedCategory === category._id ? 'btn-danger' : 'btn-light'}`}
+                                    style={{ borderRadius: '15px', fontWeight: 'bold', fontSize: '0.8rem' }} // Adjust font size
+                                >
+                                    {category.name}
+                                </Button>
+                            </Col>
+                        ))}
+                    </Row>
 
-  const addToCart = (item) => {
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find((cartItem) => cartItem._id === item._id);
-      if (existingItem) {
-        return prevItems.map((cartItem) =>
-          cartItem._id === item._id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
-        );
-      } else {
-        return [...prevItems, { ...item, quantity: 1 }];
-      }
-    });
-  };
-
-  const updateQuantity = (index, change) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item, i) =>
-        i === index ? { ...item, quantity: Math.max(1, item.quantity + change) } : item
-      )
+                    {/* Dish List */}
+                    <Row >
+                        {dishes.length > 0 ? (
+                            dishes.map(dish => (
+                                <Col md={6} key={dish._id} className="mb-2">
+                                    <Card style={{
+                                        borderRadius: '12px',
+                                        overflow: 'hidden',
+                                        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+                                        transition: 'transform 0.3s ease-in-out',
+                                        cursor: 'pointer',
+                                        width: '100%' // Adjust card width
+                                    }}
+                                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>                                        
+                                        <Card.Body className="d-flex justify-content-between align-items-center">
+                                            <div className="d-flex align-items-center">
+                                                <Card.Img
+                                                    variant="left"
+                                                    src={dish.img || 'https://via.placeholder.com/50'}
+                                                    alt={dish.name}
+                                                    onError={(e) => e.target.src = 'https://via.placeholder.com/50'}
+                                                    style={{ height: '50px', width: '50px', objectFit: 'cover', borderRadius: '5px' }} // Small image
+                                                />
+                                                <Card.Title className="fw-bold mb-0 ms-3" style={{ fontSize: '1rem' }}>{dish.name}</Card.Title> {/* Adjust font size */}
+                                            </div>
+                                            <Button variant="danger" className="fw-bold" onClick={() => addToCart(dish)} style={{ fontSize: '0.9rem' }}>Thêm</Button> {/* Adjust font size */}
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            ))
+                        ) : (
+                            <p className="text-center w-100">Chưa có món ăn trong danh mục này</p>
+                        )}
+                    </Row>
+                </Col>
+                {/* Cart Sidebar */}
+                <Col md={3} style={{ top: '50px', bottom: '0', overflowY: 'auto', backgroundColor: '#f8f9fa', padding: '20px', paddingTop:'0px', boxShadow: '-2px 0 5px rgba(0,0,0,0.1)' }}>
+                    <h5>Giỏ hàng</h5>
+                    <Cart cartItems={cartItems} removeFromCart={removeFromCart} updateCartItemQuantity={updateCartItemQuantity} />
+                </Col>
+            </Row>
+        </Container>
     );
-  };
-
-  const updateNote = (index, note) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item, i) => (i === index ? { ...item, note } : item))
-    );
-  };
-
-  const calculateTotalAmount = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
-
-  const handlePayment = async () => {
-    if (!userInfo.full_name) {
-      toast.error("Vui lòng nhập đầy đủ thông tin người dùng!");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Bạn cần đăng nhập để thực hiện chức năng này!");
-      return;
-    }
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/order/createOrder`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          items: cartItems,
-          order_type: 'counter',
-          total_price: calculateTotalAmount(),
-          user_info: userInfo,
-          delivery_method: deliveryMethod,
-          delivery_time: deliveryTime
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        toast.success("Đơn hàng đã được tạo thành công!");
-        navigate("/confirm-order", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill } });
-      } else {
-        const errorData = await response.json();
-        toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
-      }
-    } catch (error) {
-      toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
-    }
-  };
-
-  const filteredOrders = orders.filter(order => order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()));
-
-  return (
-    <div className="container mt-5">
-      <ToastContainer />
-      <div className="row">
-        <div className="col-md-2">
-          <h2 className="mb-4">Quản lý đơn hàng</h2>
-          <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="Tìm kiếm đơn hàng"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <div className="accordion" id="orderAccordion">
-            {filteredOrders.map((order, index) => (
-              <div className="accordion-item" key={index}>
-                <h2 className="accordion-header">
-                  <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target={`#order-${index}`}>
-                    {order.customer_name} - {new Date(order.created_at).toLocaleString()}
-                  </button>
-                </h2>
-                <div id={`order-${index}`} className="accordion-collapse collapse" data-bs-parent="#orderAccordion">
-                  <div className="accordion-body">
-                    <p><strong>Tổng tiền:</strong> {formatAmount(order.total_amount)}</p>
-                    <p><strong>Phương thức nhận hàng:</strong> {order.delivery_method}</p>
-                    <p><strong>Thời gian nhận hàng:</strong> {new Date(order.delivery_time).toLocaleString()}</p>
-                    <p><strong>Trạng thái thanh toán:</strong> {order.isPaid ? "Đã thanh toán" : "Chưa thanh toán"}</p>
-                    <h5>Chi tiết đơn hàng:</h5>
-                    {order.items.map((item, i) => (
-                      <div key={i}>
-                        <p>{item.name} - {item.quantity} x {formatAmount(item.price)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="col-md-7">
-          <h2 className="mb-4">Menu</h2>
-          <div className="row">
-            {menuItems.map((item) => (
-              <div className="col-md-4 mb-4" key={item._id}>
-                <div className="card">
-                  <img src={item.img} alt={item.name} className="card-img-top" />
-                  <div className="card-body">
-                    <h5 className="card-title">{item.name}</h5>
-                    <p className="card-text">{formatAmount(item.price)}</p>
-                    <button className="btn btn-primary" onClick={() => addToCart(item)}>Thêm vào giỏ</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="col-md-3">
-          <h2 className="mb-4">Giỏ hàng</h2>
-          <div className="accordion" id="cartAccordion">
-            {cartItems.map((item, index) => (
-              <div className="accordion-item" key={index}>
-                <h2 className="accordion-header">
-                  <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target={`#item-${index}`}>
-                    {item.name}
-                  </button>
-                </h2>
-                <div id={`item-${index}`} className={`accordion-collapse collapse ${index === cartItems.length - 1 ? "show" : ""}`} data-bs-parent="#cartAccordion">
-                  <div className="accordion-body">
-                    <img src={item.img} alt={item.name} className="img-fluid rounded mb-3" style={{ maxWidth: "150px" }} />
-                    <p><strong>Kích thước:</strong> {item.optional.size}</p>
-                    <p><strong>Giá:</strong> {formatAmount(item.price)}</p>
-                    <div className="d-flex align-items-center mb-3">
-                      <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, -1)}>-</button>
-                      <span className="mx-3">{item.quantity}</span>
-                      <button className="btn btn-outline-secondary" onClick={() => updateQuantity(index, 1)}>+</button>
-                    </div>
-                    <p><strong>Tổng:</strong> {formatAmount(item.price * item.quantity)}</p>
-                    <textarea
-                      className="form-control"
-                      placeholder="Ghi chú"
-                      value={item.note}
-                      onChange={(e) => updateNote(index, e.target.value)}
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <h3 className="mt-3">Tổng tiền: {formatAmount(calculateTotalAmount())}</h3>
-          <button className="btn btn-primary mt-3" onClick={handlePayment}>Thanh toán</button>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 export default StaffOrder;

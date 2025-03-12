@@ -9,7 +9,7 @@ const billSchema = new Schema({
   total_amount: { type: Number, required: true },
   items: [
     {
-      item_id: { type: Schema.Types.ObjectId, ref: 'Item', required: true },
+      item_id: { type: Schema.Types.ObjectId, ref: 'Dish', required: true },
       size: { type: String, required: false },
       quantity: { type: Number, required: true },
       price: { type: Number, required: true },

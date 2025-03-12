@@ -57,14 +57,36 @@ const createOrder = async (req, res) => {
 
 const getStaffOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ order_type: 'counter' }).populate('bill');
+        const orders = await Order.find().populate('bill');
         res.status(200).json({ orders });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching staff orders', error });
     }
 };
 
+const getOrderDetails = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await Order.findById(orderId)
+            .populate({
+                path: 'bill',
+                populate: [
+                    { path: 'user_id', model: 'Account' },
+                    { path: 'items.item_id', model: 'Dish' }
+                ]
+            });
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.status(200).json({ order });
+    } catch (error) {
+        console.error('Error fetching order details:', error);
+        res.status(500).json({ message: 'Error fetching order details', error });
+    }
+};
+
 module.exports = {
     createOrder,
-    getStaffOrders
+    getStaffOrders,
+    getOrderDetails // Export the new function
 };

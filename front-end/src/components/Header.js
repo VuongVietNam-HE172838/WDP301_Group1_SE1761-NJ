@@ -33,8 +33,8 @@ function Header() {
     navigate("/login");
   };
 
-  const navItems = ["TRANG CHỦ", "MENU", "ĐẶT HÀNG", "GIỚI THIỆU", "TIN TỨC"];
-  const navItemLinks = ["home", "menu", "order", "introduction", "blogs"];
+  const navItems = ["TRANG CHỦ", "MENU", "GIỚI THIỆU", "TIN TỨC"];
+  const navItemLinks = ["home", "menu", "introduction", "blogs"];
 
   const location = useLocation();
 
@@ -108,11 +108,6 @@ function Header() {
                     <li>
                       <Link className="dropdown-item" to="/profile">
                         Chi tiết Profile
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="dropdown-item" to="/cart">
-                        Giỏ hàng
                       </Link>
                     </li>
                     <li>
