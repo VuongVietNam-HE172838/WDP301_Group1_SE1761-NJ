@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import ManageCategory from './ManageCategory';
 import ManageDish from './ManageDish';
 import '../AdminDashboard.css';
+import ManageBlog from './ManageBlog';
 
 const AdminDashboard = () => {
   return (
@@ -34,6 +35,11 @@ const AdminDashboard = () => {
                 </Link>
               </li>
               <li className="nav-item">
+                <Link className="nav-link" to="/admin/manage-blog">
+                  <i className='bx bxs-food'></i> Manage Blog
+                </Link>
+              </li>
+              <li className="nav-item">
                 <Link className="nav-link" to="/admin/reports">
                   <i className='bx bxs-report'></i> Báo cáo
                 </Link>
@@ -47,6 +53,7 @@ const AdminDashboard = () => {
           {/* Hiển thị component dựa trên route */}
           <ManageDish />
           <ManageCategory />
+          <ManageBlog/>
         </main>
       </div>
     </div>
