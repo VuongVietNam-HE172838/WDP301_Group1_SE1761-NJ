@@ -2,7 +2,7 @@ const AccountDetail = require('../models/accountDetail');
 
 const getUserInformation = async (req, res) => {
   try {
-    const userId = req.user.accountId;
+    const userId = req.user._id;
     console.log(`User ID from token: ${userId}`); // Log the userId
 
     const userInfo = await AccountDetail.findOne({ account_id: userId }).populate('account_id');
@@ -22,7 +22,7 @@ const getUserInformation = async (req, res) => {
 
 const updateUserInformation = async (req, res) => {
   try {
-    const userId = req.user.accountId;
+    const userId = req.user._id;
     const { full_name, phone_number, birth_of_date, id_number, gender, address, profile_picture } = req.body;
 
     const updatedUserInfo = await AccountDetail.findOneAndUpdate(
