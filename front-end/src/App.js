@@ -19,8 +19,8 @@ import Blog from './components/Blog';
 import BlogDetail from './components/BlogDetail';
 import QR from './components/QR';
 import ConfirmOrder from './components/ConfirnOrder';
-import BlogSlider from './components/BlogSlider';
 import AdminDashboard from './components/AdminDashboard';
+import ManageBlog from './components/ManageBlog';
 import Cart from './components/Cart';
 const App = () => {
   return (
@@ -34,7 +34,6 @@ const App = () => {
           <Route path="/forgetpassword" element={<ForgetPassword />} />
           <Route path="/home" element={<About />} />
           <Route path="/" element={<About />} />
-          <Route path="/blog" element={<BlogSlider />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
@@ -42,7 +41,10 @@ const App = () => {
           <Route path="/admin" element={<AdminDashboard />}>
             <Route path="verify-accounts" element={<AccountList />} />
             <Route path="billing" element={<BillHistory />} />
+
           </Route>
+          <Route path="/admin/manage-blog" element={<ManageBlog />} />
+
           <Route path="/blogs" element={<Blog />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/payments" element={<QR/>} />
