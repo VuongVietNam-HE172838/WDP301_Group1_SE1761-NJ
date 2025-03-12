@@ -81,23 +81,40 @@ const ConfirmOrder = () => {
     }
 
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      toast.error("Bạn cần đăng nhập để thực hiện chức năng này!");
+      return;
+    }
+
+    console.log('Token:', token); // Log the token
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/order/createOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Ensure token is sent
         },
-        body: JSON.stringify({ items: cartItems, order_type: 'online', total_price: totalPrice }), // Set order type to 'online'
+        body: JSON.stringify({
+          items: cartItems,
+          order_type: 'online',
+          total_price: totalPrice,
+          user_info: userInfo, // Include user info
+          delivery_method: deliveryMethod, // Include delivery method
+          delivery_time: deliveryTime // Include delivery time
+        }), // Set order type to 'online'
       });
+
+      console.log('Response status:', response.status); // Log the response status
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Order created:', data); // Log the response data
         toast.success("Đơn hàng đã được tạo thành công!");
         navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill } });
       } else {
+        const errorData = await response.json();
+        console.error('Error creating order:', errorData); // Log the error response
         toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
       }
     } catch (error) {

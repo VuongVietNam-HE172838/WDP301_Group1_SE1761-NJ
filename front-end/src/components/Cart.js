@@ -22,6 +22,7 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                     <Col md={8}>
                                         <Card.Title>{item.name}</Card.Title>
                                         <Card.Text>{item.description}</Card.Text>
+                                        <Card.Text><strong>Kích thước:</strong> {item.optional?.size || 'N/A'}</Card.Text>
                                         <Card.Text className="fw-bold text-danger">
                                             {item.optional?.price ? `${item.optional.price.toLocaleString()} đ` : 'N/A'}
                                         </Card.Text>

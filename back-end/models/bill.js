@@ -7,13 +7,14 @@ const billSchema = new Schema({
   items: [
     {
       item_id: { type: Schema.Types.ObjectId, ref: 'Item', required: true },
+      size: { type: String, required: false },
       quantity: { type: Number, required: true },
       price: { type: Number, required: true },
     },
   ],
-  delivery_method: { type: String, enum: ['take away', 'dine in'], required: true },
+  delivery_method: { type: String, required: true },
   delivery_time: { type: Date, required: true },
-  isPaid: { type: Boolean, default: false },
+  isPaid: { type: Boolean, default: false }, // Ensure isPaid is false by default
   created_at: { type: Date, default: Date.now },
 });
 

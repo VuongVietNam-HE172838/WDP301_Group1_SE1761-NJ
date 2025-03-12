@@ -2,6 +2,7 @@ const Order = require('../models/order');
 const Bill = require('../models/bill');
 const Dish = require('../models/dish');
 const Account = require('../models/account');
+const jwt = require('jsonwebtoken');
 
 const createOrder = async (req, res) => {
     try {
@@ -30,7 +31,8 @@ const createOrder = async (req, res) => {
                 price: item.optional?.price || 0
             })),
             delivery_method,
-            delivery_time: new Date()
+            delivery_time: new Date(),
+            isPaid: false // Ensure isPaid is false
         });
 
         console.log('New bill:', newBill);
@@ -44,7 +46,7 @@ const createOrder = async (req, res) => {
             bill: newBill._id,
             order_by: user._id,
             order_type,
-            status: 'not done'
+            status: 'on going' // Set order status to on going
         });
 
         console.log('New order:', newOrder);
