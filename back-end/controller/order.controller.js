@@ -19,7 +19,7 @@ const createOrder = async (req, res) => {
             customer_address: user_info.address,
             total_amount: total_price,
             items: items.map(item => ({
-                item_id: item._id,
+                item_id: item.id,
                 quantity: item.quantity,
                 price: item.optional?.price || 0
             })),

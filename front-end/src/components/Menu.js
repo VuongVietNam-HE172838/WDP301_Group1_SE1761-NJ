@@ -43,24 +43,104 @@ const Menu = () => {
         fetchDishes();
     }, [selectedCategory]);
 
-    const addToCart = (dish) => {
-        const existingItem = cartItems.find(item => item._id === dish._id);
-        if (existingItem) {
-            setCartItems(cartItems.map(item => item._id === dish._id ? { ...item, quantity: item.quantity + 1 } : item));
-        } else {
-            setCartItems([...cartItems, { ...dish, quantity: 1 }]);
+    // Lấy danh sách cart items từ MongoDB
+    useEffect(() => {
+        const fetchCartItems = async () => {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            try {
+                const response = await axios.get('http://localhost:9999/api/cart', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                const cart = response.data;
+                const populatedCartItems = await Promise.all(cart.items.map(async (item) => {
+                    const dishResponse = await axios.get(`http://localhost:9999/menu/dishes/${item.dish_id}`);
+                    const dish = dishResponse.data;
+                    return { 
+                        ...item, 
+                        dish: {
+                            ...dish,
+                            optional: dish.optional || { size: 'Không có thông tin', price: 0 }
+                        }
+                    };
+                }));
+                setCartItems(populatedCartItems);
+            } catch (error) {
+                console.error("Error fetching cart items:", error);
+            }
+        };
+        fetchCartItems();
+    }, []);
+
+    const addToCart = async (dish) => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const response = await axios.post('http://localhost:9999/api/cart/add', {
+                dish_id: dish._id,
+                quantity: 1,
+                note: ""
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 201) {
+                const newCartItem = response.data.cartItem;
+                const existingItem = cartItems.find(item => item.dish._id === newCartItem.dish_id);
+                if (existingItem) {
+                    setCartItems(cartItems.map(item => item.dish._id === newCartItem.dish_id ? { ...item, quantity: newCartItem.quantity } : item));
+                } else {
+                    setCartItems([...cartItems, { ...newCartItem, dish }]);
+                }
+            }
+        } catch (error) {
+            console.error("Error adding item to cart:", error);
         }
     };
 
-    const removeFromCart = (id) => {
-        setCartItems(cartItems.filter(item => item._id !== id));
+    const removeFromCart = async (dish_id) => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            await axios.delete(`http://localhost:9999/api/cart/remove/${dish_id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            setCartItems(cartItems.filter(item => item.dish._id !== dish_id));
+        } catch (error) {
+            console.error("Error removing item from cart:", error);
+        }
     };
 
-    const updateCartItemQuantity = (id, quantity) => {
+    const updateCartItemQuantity = async (dish_id, quantity) => {
         if (quantity <= 0) {
-            removeFromCart(id);
+            removeFromCart(dish_id);
         } else {
-            setCartItems(cartItems.map(item => item._id === id ? { ...item, quantity } : item));
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            try {
+                await axios.put('http://localhost:9999/api/cart/update', {
+                    dish_id,
+                    quantity
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                setCartItems(cartItems.map(item => item.dish._id === dish_id ? { ...item, quantity } : item));
+            } catch (error) {
+                console.error("Error updating cart item:", error);
+            }
         }
     };
 
