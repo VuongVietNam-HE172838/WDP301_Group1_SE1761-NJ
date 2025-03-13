@@ -47,7 +47,7 @@ function Header() {
             <img
               src={logo}
               alt="Company logo"
-              width="80"
+              width="60"
               className="d-inline-block align-top"
             />
           </Link>
