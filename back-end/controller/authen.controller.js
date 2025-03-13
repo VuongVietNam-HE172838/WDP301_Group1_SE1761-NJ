@@ -273,6 +273,8 @@ exports.verifyEmail = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
+  
 
   try {
     const account = await Account.findOne({ user_name: email });
@@ -288,5 +290,35 @@ exports.resetPassword = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
+  }
+};
+
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+    console.log(req.body);
+
+    // Tìm tài khoản dựa trên email (user_name)
+    const account = await Account.findOne({ user_name: email });
+    if (!account) {
+      return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
+    }
+
+    // Kiểm tra mật khẩu cũ
+    const isMatch = await bcrypt.compare(oldPassword, account.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Mật khẩu cũ không đúng!" });
+    }
+
+    // Mã hóa mật khẩu mới
+    const salt = await bcrypt.genSalt(10);
+    account.password = await bcrypt.hash(newPassword, salt);
+    await account.save();
+
+    res.status(200).json({ message: "Đổi mật khẩu thành công." });
+  } catch (err) {
+    console.error("Lỗi khi đổi mật khẩu:", err.message);
+    res.status(500).json({ message: "Lỗi server, vui lòng thử lại sau!" });
   }
 };

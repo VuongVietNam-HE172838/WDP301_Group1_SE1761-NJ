@@ -25,6 +25,7 @@ import Cart from './components/Cart';
 import StaffOrder from './components/StaffOrder';
 import ConfirmOrderStaff from './components/ConfirmOrder';
 import CartStaff from './components/CartStaff';
+import UserProfile from './components/UserProfile';
 const App = () => {
   return (
 
@@ -47,7 +48,7 @@ const App = () => {
 
           </Route>
           <Route path="/admin/manage-blog" element={<ManageBlog />} />
-
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/blogs" element={<Blog />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/payments" element={<QR/>} />

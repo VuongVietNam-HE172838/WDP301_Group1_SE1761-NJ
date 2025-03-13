@@ -8,6 +8,7 @@ router.post('/google-login', controller.authenController.googleLogin);
 router.post("/register", controller.authenController.register);
 router.get("/verify-email", controller.authenController.verifyEmail);
 router.post('/reset-password', controller.authenController.resetPassword);
+router.post('/change-password', controller.authenController.changePassword);
 
 // các route liên quan đến otp
 router.post('/send-otp', controller.otpController.sendOTP);
