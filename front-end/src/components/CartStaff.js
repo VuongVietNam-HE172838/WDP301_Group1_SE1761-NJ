@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Card, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
+const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const navigate = useNavigate();
     const [selectedItems, setSelectedItems] = useState(cartItems.map(item => ({ ...item, selected: true })));
 
@@ -10,7 +10,7 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
         setSelectedItems(cartItems.map(item => ({ ...item, selected: true })));
     }, [cartItems]);
 
-    const totalPrice = selectedItems.reduce((total, item) => item.selected ? total + (item.dish.optional?.price || 0) * item.quantity : total, 0);
+    const totalPrice = selectedItems.reduce((total, item) => item.selected ? total + ((item.dish.optional?.price || 0) * item.quantity) : total, 0);
 
     const handleOrder = () => {
         const formattedCartItems = selectedItems
@@ -23,7 +23,7 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                 quantity: item.quantity,
                 note: item.note
             }));
-        navigate('/confirm-order', { state: { cartItems: formattedCartItems, totalPrice } });
+        navigate('/confirm-orderStaff', { state: { cartItems: formattedCartItems, totalPrice } });
     };
 
     const handleSelectItem = (index) => {
@@ -110,4 +110,4 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     );
 };
 
-export default Cart;
+export default CartStaff;

@@ -2,8 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors'); // Import cors
 const mongoose = require('mongoose'); // Import mongoose
+const bodyParser = require('body-parser'); // Import body-parser
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 9999;
 const routes = require('./route');
 const menuRoutes = require('./route/menu.route'); // Import menu routes
 const orderRoutes = require('./route/order.route'); // Import order routes
@@ -13,6 +14,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.use(bodyParser.json());
 app.use(express.json());
 app.use('/api', routes);
 app.use('/menu', menuRoutes); // Use menu routes
@@ -30,8 +32,8 @@ mongoose.connect(process.env.MONGODB_URL, {
 }).then(() => {
   console.log('Connected to MongoDB');
   app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
   });
 }).catch(err => {
-  console.error('Failed to connect to MongoDB', err);
+  console.error('Database connection error:', err);
 });

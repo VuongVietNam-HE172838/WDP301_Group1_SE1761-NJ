@@ -23,6 +23,8 @@ import AdminDashboard from './components/AdminDashboard';
 import ManageBlog from './components/ManageBlog';
 import Cart from './components/Cart';
 import StaffOrder from './components/StaffOrder';
+import ConfirmOrderStaff from './components/ConfirmOrder';
+import CartStaff from './components/CartStaff';
 const App = () => {
   return (
 
@@ -50,8 +52,10 @@ const App = () => {
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/payments" element={<QR/>} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/cartStaff" element={<CartStaff />} />
           <Route path="/staff-order" element={<StaffOrder />} />
           <Route path="/confirm-order" element={<ConfirmOrder />} />
+          <Route path="/confirm-orderStaff" element={<ConfirmOrderStaff />} />
           <Route path='*' element={<h1>Not Found</h1>} />
           <Route path='/success' element={<PaymentSuccess/>} />
 
