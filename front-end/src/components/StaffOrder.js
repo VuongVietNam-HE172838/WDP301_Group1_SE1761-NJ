@@ -3,6 +3,7 @@ import { Container, Row, Col, Button, Card, Accordion } from 'react-bootstrap';
 import axios from 'axios';
 import Cart from './Cart';
 import CartIcon from './CartIcon';
+import CartStaff from './CartStaff';
 
 const StaffOrder = () => {
     const [categories, setCategories] = useState([]);
@@ -67,7 +68,7 @@ const StaffOrder = () => {
         if (existingItem) {
             setCartItems(cartItems.map(item => item._id === dish._id ? { ...item, quantity: item.quantity + 1 } : item));
         } else {
-            setCartItems([...cartItems, { ...dish, quantity: 1 }]);
+            setCartItems([...cartItems, { dish, quantity: 1 }]);
         }
     };
 
@@ -168,7 +169,7 @@ const StaffOrder = () => {
                 {/* Cart Sidebar */}
                 <Col md={3} style={{ top: '50px', bottom: '0', overflowY: 'auto', backgroundColor: '#f8f9fa', padding: '20px', paddingTop:'0px', boxShadow: '-2px 0 5px rgba(0,0,0,0.1)' }}>
                     <h5>Giỏ hàng</h5>
-                    <Cart cartItems={cartItems} removeFromCart={removeFromCart} updateCartItemQuantity={updateCartItemQuantity} />
+                    <CartStaff cartItems={cartItems} removeFromCart={removeFromCart} updateCartItemQuantity={updateCartItemQuantity} />
                 </Col>
             </Row>
         </Container>

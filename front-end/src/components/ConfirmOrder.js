@@ -6,7 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const ConfirmOrder = () => {
+const ConfirmOrderStaff = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { cartItems: initialCartItems, totalPrice } = location.state;
@@ -70,6 +70,7 @@ const ConfirmOrder = () => {
   };
 
   const handlePayment = async () => {
+    
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -88,7 +89,7 @@ const ConfirmOrder = () => {
         },
         body: JSON.stringify({
           items: cartItems,
-          order_type: 'online',
+          order_type: 'counter',
           total_price: totalPrice,
           user_info: userInfo, // Include user info
           delivery_method: deliveryMethod, // Include delivery method
@@ -154,44 +155,7 @@ const ConfirmOrder = () => {
         </div>
         <div className="col-md-4">
           <h2 className="mb-4">Thông tin người dùng</h2>
-          <form>
-            <div className="mb-3">
-              <label className="form-label">Họ và Tên</label>
-              <input type="text" className="form-control" value={userInfo.full_name} onChange={(e) => setUserInfo({ ...userInfo, full_name: e.target.value })} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Số điện thoại</label>
-              <input type="text" className="form-control" value={userInfo.phone_number} onChange={(e) => setUserInfo({ ...userInfo, phone_number: e.target.value })} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Địa chỉ</label>
-              <input type="text" className="form-control" value={userInfo.address} onChange={(e) => setUserInfo({ ...userInfo, address: e.target.value })} />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Phương thức nhận hàng</label>
-              <select className="form-select" value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value)}>
-                <option value="Tự đến nhận hàng">Tự đến nhận hàng</option>
-                <option value="Giao hàng">Giao hàng</option>
-              </select>
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Thời gian nhận hàng</label>
-              <DatePicker
-                selected={deliveryTime}
-                onChange={(date) => setDeliveryTime(date)}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={15}
-                dateFormat="dd/MM/yyyy HH:mm"
-                minDate={new Date()}
-                minTime={new Date().getDate() === deliveryTime.getDate() ? initialDeliveryTime : undefined}
-                maxTime={new Date().setHours(23, 45)}
-                className="form-control"
-              />
-            </div>
-
-          </form>
+          
           <button className="btn btn-primary mt-3" onClick={handlePayment}>Thanh toán</button>
         </div>
       </div>
@@ -199,4 +163,4 @@ const ConfirmOrder = () => {
   );
 };
 
-export default ConfirmOrder;
+export default ConfirmOrderStaff;
