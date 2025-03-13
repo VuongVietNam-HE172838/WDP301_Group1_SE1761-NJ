@@ -3,6 +3,9 @@ const Schema = mongoose.Schema;
 
 const billSchema = new Schema({
   user_id: { type: Schema.Types.ObjectId, ref: 'Account', required: true },
+  customer_name: { type: String, required: false }, // for offline orders
+  customer_phone: { type: String, required: false }, // for online orders
+  customer_address: { type: String, required: false }, // for online orders
   total_amount: { type: Number, required: true },
   items: [
     {
