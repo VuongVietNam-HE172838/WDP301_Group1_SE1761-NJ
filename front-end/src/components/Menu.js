@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Button, Card, Offcanvas } from 'react-bootstrap';
+import { Container, Row, Col, Button, Card, Offcanvas, Badge } from 'react-bootstrap';
 import axios from 'axios';
 import Cart from './Cart';
 import CartIcon from './CartIcon';
@@ -33,9 +33,7 @@ const Menu = () => {
             if (!selectedCategory) return;
             try {
                 const response = await axios.get(`http://localhost:9999/menu/${selectedCategory}/dishes`);
-                // **Lọc những món ăn có quantity > 0**
-                const filteredDishes = response.data.filter(dish => parseInt(dish.quantity) > 0);
-                setDishes(filteredDishes);
+                setDishes(response.data);
             } catch (error) {
                 console.error("Error fetching dishes:", error);
             }
@@ -176,7 +174,8 @@ const Menu = () => {
                                         overflow: 'hidden',
                                         boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
                                         transition: 'transform 0.3s ease-in-out',
-                                        cursor: 'pointer'
+                                        cursor: 'pointer',
+                                        position: 'relative'
                                     }}
                                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
                                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
@@ -187,13 +186,16 @@ const Menu = () => {
                                             onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
                                             style={{ height: '400px', objectFit: 'cover', borderRadius: '15px 15px 0 0' }}
                                         />
+                                        {dish.quantity === 0 && (
+                                            <Badge bg="danger" style={{ position: 'absolute', top: '10px', right: '10px' }}>Hết hàng</Badge>
+                                        )}
                                         <Card.Body>
                                             <Card.Title className="fw-bold">{dish.name}</Card.Title>
                                             <Card.Text className="text-muted">{dish.description || 'Không có mô tả'}</Card.Text>
                                             <Card.Text className="fw-bold text-danger">
                                                 {dish.optional?.price ? `${dish.optional.price.toLocaleString()} đ` : 'N/A'}
                                             </Card.Text>
-                                            <Button variant="danger" className="w-100 fw-bold" onClick={() => addToCart(dish)}>Thêm</Button>
+                                            <Button variant="danger" className="w-100 fw-bold" onClick={() => addToCart(dish)} disabled={dish.quantity === 0}>Thêm</Button>
                                         </Card.Body>
                                     </Card>
                                 </Col>
