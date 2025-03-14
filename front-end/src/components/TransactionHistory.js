@@ -20,7 +20,8 @@ const TransactionHistory = () => {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        setTransactions(data);
+        const paidTransactions = data.filter(transaction => transaction.isPaid);
+        setTransactions(paidTransactions);
       } catch (error) {
         console.error('Error fetching transaction history:', error);
         toast.error("Có lỗi xảy ra khi lấy lịch sử giao dịch!");
@@ -47,6 +48,7 @@ const TransactionHistory = () => {
                     <th>Đơn Giá</th>
                     <th>Tổng Tiền</th>
                     <th>Thời Gian Đặt Hàng</th>
+                    <th>Trạng Thái Thanh Toán</th>
                     <th>Trạng Thái</th>
                   </tr>
                 </thead>
@@ -67,6 +69,9 @@ const TransactionHistory = () => {
                           )}
                           {i === 0 && (
                             <td rowSpan={transaction.items.length}>{new Date(transaction.orderTime).toLocaleString()}</td>
+                          )}
+                          {i === 0 && (
+                            <td rowSpan={transaction.items.length}>{transaction.isPaid ? "Đã thanh toán" : "Chưa thanh toán"}</td>
                           )}
                           {i === 0 && (
                             <td rowSpan={transaction.items.length}>{transaction.status}</td>

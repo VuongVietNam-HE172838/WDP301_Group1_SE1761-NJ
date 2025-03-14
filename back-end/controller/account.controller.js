@@ -113,7 +113,8 @@ const getUserOrderHistory1 = async (req, res) => {
     })),
     totalAmount: order.bill.total_amount,
     status: order.status,
-    orderTime: order.updated_at
+    orderTime: order.updated_at,
+    isPaid: order.bill.isPaid
   })));
   } catch (error) {
     console.error('Error fetching user information:', error.message); // Log the error
