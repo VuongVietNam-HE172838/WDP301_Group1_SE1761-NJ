@@ -2,6 +2,10 @@ const AccountDetail = require('../models/accountDetail');
 const multer = require('multer')
 const {CloudinaryStorage} = require('multer-storage-cloudinary')
 const cloudinary = require("../configs/cloudinary")
+const Order = require('../models/order');
+const Bill = require('../models/bill');
+const Dish = require('../models/dish');
+const mongoose = require('mongoose');
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -15,48 +19,6 @@ const upload = multer({
 })
 
 
-const getUserInformation = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    console.log(`User ID from token: ${userId}`); // Log the userId
-
-    const userInfo = await AccountDetail.findOne({ account_id: userId }).populate('account_id');
-    console.log('User info:', userInfo); // Log the userInfo
-
-    if (!userInfo) {
-      console.log('User not found');
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json(userInfo);
-  } catch (error) {
-    console.error('Error fetching user information:', error.message); // Log the error
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-const updateUserInformation2 = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { full_name, phone_number, birth_of_date, id_number, gender, address, profile_picture } = req.body;
-
-    const updatedUserInfo = await AccountDetail.findOneAndUpdate(
-      { account_id: userId },
-      { full_name, phone_number, birth_of_date, id_number, gender, address, profile_picture },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUserInfo) {
-      console.log('User not found');
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json(updatedUserInfo);
-  } catch (error) {
-    console.error('Error updating user information:', error.message); // Log the error
-    res.status(500).json({ message: 'Server error' });
-  }
-};
 
 const updateUserInformation = async (req, res) => {
   try {
@@ -96,4 +58,109 @@ const updateUserInformation = async (req, res) => {
   }
 };
 
-module.exports = { getUserInformation, updateUserInformation, upload };
+
+const getUserInformation = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    console.log(`User ID from token: ${userId}`); // Log the userId
+
+    const userInfo = await AccountDetail.findOne({ account_id: userId }).populate('account_id');
+    console.log('User info:', userInfo); // Log the userInfo
+
+    if (!userInfo) {
+      console.log('User not found');
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(userInfo);
+  } catch (error) {
+    console.error('Error fetching user information:', error.message); // Log the error
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getUserOrderHistory1 = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    console.log(`User ID from token: ${userId}`); // Log the userId
+
+    const userOrders = await Order.find({ order_by: userId })
+    .populate({
+      path: 'bill',
+      populate: {
+        path: 'items.item_id',
+        model: 'Dish'
+      }
+    })
+    .populate({
+      path: 'order_by',
+      model: 'AccountDetail'
+    });
+
+  console.log('User orders:', userOrders); // Log the userOrders
+
+  if (!userOrders || userOrders.length === 0) {
+    console.log('No orders found');
+    return [];
+  }
+
+  res.status(200).json(userOrders.map(order => ({
+    items: order.bill.items.map(item => ({
+      name: item.item_id.name,
+      img: item.item_id.img,
+      quantity: item.quantity,
+      price: item.price
+    })),
+    totalAmount: order.bill.total_amount,
+    status: order.status,
+    orderTime: order.updated_at
+  })));
+  } catch (error) {
+    console.error('Error fetching user information:', error.message); // Log the error
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Hàm lấy lịch sử đơn hàng của người dùng
+const getUserOrderHistory = async (userId) => {
+  try {
+    console.log(`User ID: ${userId}`); // Log the userId
+
+    const userOrders = await Order.find({ order_by: userId })
+      .populate({
+        path: 'bill',
+        populate: {
+          path: 'items.item_id',
+          model: 'Dish'
+        }
+      });
+    console.log('User orders:', userOrders); // Log the userOrders
+
+    if (!userOrders || userOrders.length === 0) {
+      console.log('No orders found');
+      throw new Error('No orders found');
+    }
+
+    const formattedOrders = userOrders.map(order => {
+      return {
+        items: order.bill.items.map(item => ({
+          name: item.item_id.name,
+          image: item.item_id.img,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        orderTime: order.updated_at,
+        status: order.status,
+        totalAmount: order.bill.total_amount
+      };
+    });
+
+    return formattedOrders;
+  } catch (error) {
+    console.error('Error fetching user orders:', error.message); // Log the error
+    throw error;
+  }
+};
+
+
+module.exports = { getUserInformation, updateUserInformation, upload , getUserOrderHistory1};

@@ -26,6 +26,7 @@ import StaffOrder from './components/StaffOrder';
 import ConfirmOrderStaff from './components/ConfirmOrder';
 import CartStaff from './components/CartStaff';
 import UserProfile from './components/UserProfile';
+import TransactionHistory from './components/TransactionHistory';
 const App = () => {
   return (
 
@@ -49,6 +50,8 @@ const App = () => {
           </Route>
           <Route path="/admin/manage-blog" element={<ManageBlog />} />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/transaction-history" element={<TransactionHistory />} />
+
           <Route path="/blogs" element={<Blog />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/payments" element={<QR/>} />
