@@ -30,23 +30,41 @@ exports.getAllBlogs = async (req, res) => {
 // Tạo blog mới
 exports.createBlog = async (req, res) => {
     try {
-        const { title, content } = req.body;
-        if (!req.file) {
-            return res.status(400).json({ message: "Vui lòng upload ảnh" });
-        }
-
-        // Lấy URL ảnh đã upload lên Cloudinary
-        const imgUrl = req.file.path;  
-
-        // Tạo blog mới với URL ảnh
-        const newBlog = new Blog({ title, content, img: imgUrl });
-        await newBlog.save();
-
-        res.status(201).json(newBlog);
+      const { title, content } = req.body;
+  
+      // Kiểm tra tiêu đề
+      const isValidTitle = (title) => /^[a-zA-Z0-9\s]{10,100}$/.test(title);
+      if (!isValidTitle(title)) {
+        return res.status(400).json({
+          message: "Tiêu đề không hợp lệ! Phải có từ 10-100 ký tự và không chứa ký tự đặc biệt."
+        });
+      }
+  
+      // Kiểm tra nội dung
+      const isValidContent = (content) => content.trim().length >= 50;
+      if (!isValidContent(content)) {
+        return res.status(400).json({
+          message: "Nội dung quá ngắn! Phải có ít nhất 50 ký tự."
+        });
+      }
+  
+      if (!req.file) {
+        return res.status(400).json({ message: "Vui lòng upload ảnh" });
+      }
+  
+      // Lấy URL ảnh đã upload lên Cloudinary
+      const imgUrl = req.file.path;  
+  
+      // Tạo blog mới với URL ảnh
+      const newBlog = new Blog({ title, content, img: imgUrl });
+      await newBlog.save();
+  
+      res.status(201).json(newBlog);
     } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi tạo blog', error });
+      res.status(500).json({ message: 'Lỗi khi tạo blog', error });
     }
-};
+  };
+  
 
 
 // Cập nhật blog theo ID
