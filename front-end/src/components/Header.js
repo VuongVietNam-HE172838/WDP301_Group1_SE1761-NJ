@@ -115,6 +115,11 @@ function Header() {
                         Lịch sử giao dịch
                       </Link>
                     </li>
+                    <li>
+                      <Link className="dropdown-item" to="/order-history">
+                        Lịch sử đặt hàng
+                      </Link>
+                    </li>
                     {accountDetail?.role === "STAFF" && (
                       <li>
                         <Link className="dropdown-item" to="/staff-order">

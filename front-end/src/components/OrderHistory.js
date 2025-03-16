@@ -18,7 +18,7 @@ const OrderHistory = () => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
-        const response = await axios.get(`${process.env.REACT_APP_URL_API_BACKEND}/order/staffOrders`, {
+        const response = await axios.get(`${process.env.REACT_APP_URL_API_BACKEND}/order/onlinePaidOrders`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
