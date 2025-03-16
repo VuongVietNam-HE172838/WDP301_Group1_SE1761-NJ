@@ -48,7 +48,7 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
             {cartItems.length > 0 ? (
                 <>
                     {selectedItems.map((item, index) => (
-                        <Card key={item._id} className="mb-3">
+                        <Card key={`${item.dish._id}-${index}`} className="mb-3">
                             <Card.Body>
                                 <Row>
                                     <Col md={1} className="d-flex align-items-center">

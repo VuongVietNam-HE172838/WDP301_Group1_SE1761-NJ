@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Button, Card, Accordion } from 'react-bootstrap';
+import { Container, Row, Col, Button, Card, Accordion, Tabs, Tab } from 'react-bootstrap';
 import axios from 'axios';
 import Cart from './Cart';
 import CartIcon from './CartIcon';
@@ -64,54 +64,105 @@ const StaffOrder = () => {
     }, []);
 
     const addToCart = (dish) => {
-        const existingItem = cartItems.find(item => item._id === dish._id);
+        const existingItem = cartItems.find(item => item.dish._id === dish._id);
         if (existingItem) {
-            setCartItems(cartItems.map(item => item._id === dish._id ? { ...item, quantity: item.quantity + 1 } : item));
+            setCartItems(cartItems.map(item => item.dish._id === dish._id ? { ...item, quantity: item.quantity + 1 } : item));
         } else {
             setCartItems([...cartItems, { dish, quantity: 1 }]);
         }
     };
 
-    const removeFromCart = (id) => {
-        setCartItems(cartItems.filter(item => item._id !== id));
+    const removeFromCart = (dishId) => {
+        setCartItems(cartItems.filter(item => item.dish._id !== dishId));
     };
 
-    const updateCartItemQuantity = (id, quantity) => {
+    const updateCartItemQuantity = (dishId, quantity) => {
         if (quantity <= 0) {
-            removeFromCart(id);
+            removeFromCart(dishId);
         } else {
-            setCartItems(cartItems.map(item => item._id === id ? { ...item, quantity } : item));
+            setCartItems(cartItems.map(item => item.dish._id === dishId ? { ...item, quantity } : item));
         }
     };
 
     const toggleCart = () => setShowCart(!showCart);
 
+    const updateOrderStatus = async (orderId, status) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.put(`${process.env.REACT_APP_URL_API_BACKEND}/order/${orderId}/status`, { status }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setOrders(orders.map(order => order._id === orderId ? { ...order, status: response.data.order.status } : order));
+            console.log("Updated order status:", response.data.order);
+        } catch (error) {
+            console.error("Error updating order status:", error);
+        }
+    };
+
     return (
         <Container fluid>
             <Row>
-                {/* Orders List */}
                 <Col md={3} style={{ bottom: '0', overflowY: 'auto', backgroundColor: '#f8f9fa', padding: '20px', paddingTop:'50px', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
                     <h5>Danh sách đơn hàng</h5>
-                    <Accordion>
-                        {orders.map(order => (
-                            <Accordion.Item eventKey={order._id} key={order._id}>
-                                <Accordion.Header>{order.bill.user_id.user_name} - {new Date(order.bill.created_at).toLocaleString()}</Accordion.Header>
-                                <Accordion.Body>
-                                    <p><strong>Địa chỉ:</strong> {order.bill.customer_address}</p>
-                                    <p><strong>Số điện thoại:</strong> {order.bill.customer_phone}</p>
-                                    <p><strong>Phương thức giao hàng:</strong> {order.bill.delivery_method}</p>
-                                    <p><strong>Thời gian giao hàng:</strong> {order.bill.delivery_time}</p>
-                                    <p><strong>Tổng tiền:</strong> {order.bill.total_amount.toLocaleString()} đ</p>
-                                    <p><strong>Danh sách món:</strong></p>
-                                    <ul>
-                                        {order.bill.items.map(item => (
-                                            <li key={item.item_id}>{item.item_id.name} - Số lượng: {item.quantity} - Giá: {item.price.toLocaleString()} đ</li>
-                                        ))}
-                                    </ul>
-                                </Accordion.Body>
-                            </Accordion.Item>
-                        ))}
-                    </Accordion>
+                    <Tabs defaultActiveKey="counter" id="order-tabs" className="mb-3">
+                        <Tab eventKey="counter" title="Tại quầy">
+                            <Accordion>
+                                {orders.filter(order => order.order_type === 'counter' && order.bill.isPaid).map(order => (
+                                    <Accordion.Item eventKey={order._id} key={order._id}>
+                                        <Accordion.Header>{order.bill.customer_name} - {new Date(order.bill.created_at).toLocaleString()}</Accordion.Header>
+                                        <Accordion.Body>
+                                            <p><strong>Loại đơn:</strong> {order.order_type}</p>
+                                            <p><strong>Trạng thái:</strong> <span style={{ color: order.status === 'done' ? 'green' : order.status === 'on going' ? 'orange' : 'red', fontWeight: 'bold' }}>{order.status}</span></p>
+                                            <p><strong>Tổng tiền:</strong> {order.bill.total_amount.toLocaleString()} đ</p>
+                                            <p><strong>Danh sách món:</strong></p>
+                                            <ul>
+                                                {order.bill.items.map((item, index) => (
+                                                    <li key={`${item.item_id._id}-${index}`}>{item.item_id.name} - Số lượng: {item.quantity} - Giá: {item.price.toLocaleString()} đ</li>
+                                                ))}
+                                            </ul>
+                                            <p><strong>Ghi chú</strong> {order.note}</p>
+                                            <div>
+                                                <Button variant="success" onClick={() => updateOrderStatus(order._id, 'done')}>Hoàn thành</Button>
+                                                <Button variant="warning" onClick={() => updateOrderStatus(order._id, 'on going')}>Đang làm</Button>
+                                                <Button variant="danger" onClick={() => updateOrderStatus(order._id, 'cancel')}>Hủy</Button>
+                                            </div>
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                ))}
+                            </Accordion>
+                        </Tab>
+                        <Tab eventKey="online" title="Online">
+                            <Accordion>
+                                {orders.filter(order => order.order_type !== 'counter' && order.bill.isPaid).map(order => (
+                                    <Accordion.Item eventKey={order._id} key={order._id}>
+                                        <Accordion.Header>{order.bill.customer_name} - {new Date(order.bill.created_at).toLocaleString()}</Accordion.Header>
+                                        <Accordion.Body>
+                                            <p><strong>Địa chỉ:</strong> {order.bill.customer_address}</p>
+                                            <p><strong>Số điện thoại:</strong> {order.bill.customer_phone}</p>
+                                            <p><strong>Thời gian giao hàng:</strong> {order.bill.delivery_time}</p>
+                                            <p><strong>Phương thức giao hàng:</strong> {order.bill.delivery_method}</p>
+                                            <p><strong>Loại đơn:</strong> {order.order_type}</p>
+                                            <p><strong>Trạng thái:</strong> <span style={{ color: order.status === 'done' ? 'green' : order.status === 'on going' ? 'orange' : 'red', fontWeight: 'bold' }}>{order.status}</span></p>
+                                            <p><strong>Tổng tiền:</strong> {order.bill.total_amount.toLocaleString()} đ</p>
+                                            <p><strong>Danh sách món:</strong></p>
+                                            <ul>
+                                                {order.bill.items.map((item, index) => (
+                                                    <li key={`${item.item_id._id}-${index}`}>{item.item_id.name} - Số lượng: {item.quantity} - Giá: {item.price.toLocaleString()} đ</li>
+                                                ))}
+                                            </ul>
+                                            <div>
+                                                <Button variant="success" onClick={() => updateOrderStatus(order._id, 'done')}>Hoàn thành</Button>
+                                                <Button variant="warning" onClick={() => updateOrderStatus(order._id, 'on going')}>Đang làm</Button>
+                                                <Button variant="danger" onClick={() => updateOrderStatus(order._id, 'cancel')}>Hủy</Button>
+                                            </div>
+                                        </Accordion.Body>
+                                    </Accordion.Item>
+                                ))}
+                            </Accordion>
+                        </Tab>
+                    </Tabs>
                 </Col>
                 {/* Main Content */}
                 <Col md={6}>

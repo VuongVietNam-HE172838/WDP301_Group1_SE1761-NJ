@@ -94,7 +94,7 @@ const ConfirmOrderStaff = () => {
           user_info: userInfo, // Include user info
           delivery_method: deliveryMethod, // Include delivery method
           delivery_time: deliveryTime // Include delivery time
-        }), // Set order type to 'online'
+        }), // Set order type to 'counter'
       });
 
       console.log('Response status:', response.status); // Log the response status

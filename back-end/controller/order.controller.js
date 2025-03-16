@@ -2,6 +2,7 @@ const Order = require('../models/order');
 const Bill = require('../models/bill');
 const Dish = require('../models/dish');
 const Account = require('../models/account');
+const AccountDetail = require('../models/accountDetail');
 const jwt = require('jsonwebtoken');
 
 const createOrder = async (req, res) => {
@@ -57,9 +58,28 @@ const createOrder = async (req, res) => {
 
 const getStaffOrders = async (req, res) => {
     try {
-        const orders = await Order.find().populate('bill');
+        const orders = await Order.find()
+            .populate({
+                path: 'bill',
+                populate: [
+                    { path: 'user_id', model: 'Account' },
+                    { path: 'items.item_id', model: 'Dish' }
+                ]
+            });
+
+        // Fetch full_name from AccountDetail and add it to each bill
+        // for (const order of orders) {
+        //     const accountDetail = await AccountDetail.findOne({ account_id: order.bill.user_id });
+        //     if (accountDetail) {
+        //         order.bill.customer_name = accountDetail.full_name;
+        //     }
+        // }
+
+        console.log('Staff orders with populated data:', orders);
+
         res.status(200).json({ orders });
     } catch (error) {
+        console.error('Error fetching staff orders:', error);
         res.status(500).json({ message: 'Error fetching staff orders', error });
     }
 };
@@ -85,8 +105,33 @@ const getOrderDetails = async (req, res) => {
     }
 };
 
+const updateOrderStatus = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+
+        console.log('Updating order status:', orderId, status);
+
+        if (!['done', 'on going', 'cancel'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status' });
+        }
+
+        const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        res.status(200).json({ message: 'Order status updated successfully', order });
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        res.status(500).json({ message: 'Failed to update order status', error });
+    }
+};
+
 module.exports = {
     createOrder,
     getStaffOrders,
-    getOrderDetails // Export the new function
+    getOrderDetails,
+    updateOrderStatus // Export the new function
 };
