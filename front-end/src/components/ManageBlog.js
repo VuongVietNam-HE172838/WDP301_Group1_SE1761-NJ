@@ -19,33 +19,60 @@ const ManageBlog = () => {
   console.log(blogs);
 
   const handleAddBlog = () => {
+    if (!newBlog.title || newBlog.title.trim().length < 10 || newBlog.title.trim().length > 100) {
+      alert("Tiêu đề không hợp lệ! Phải có từ 10-100 ký tự.");
+      return;
+    }
+  
+    if (!newBlog.content || newBlog.content.trim().length < 50) {
+      alert("Nội dung quá ngắn! Phải có ít nhất 50 ký tự.");
+      return;
+    }
+  
+    if (!newBlog.img) {
+      alert("Vui lòng tải lên một hình ảnh.");
+      return;
+    }
+  
     const formData = new FormData();
     formData.append("title", newBlog.title);
     formData.append("content", newBlog.content);
-    formData.append("img", newBlog.img); // Gửi file ảnh
+    formData.append("img", newBlog.img);
     formData.append("created_at", new Date().toISOString());
-
+  
     fetch("http://localhost:9999/api/blogs", {
-        method: "POST",
-        body: formData,
+      method: "POST",
+      body: formData,
     })
-    .then(response => response.json())
-    .then(data => {
+      .then(response => response.json())
+      .then(data => {
         setBlogs([...blogs, data]);
         setShowAddModal(false);
         setNewBlog({ title: "", content: "", img: null });
-
-        // Hiển thị thông báo thành công
         alert("Thêm blog thành công! 🎉");
-    })
-    .catch(error => {
+      })
+      .catch(error => {
         console.error("Error adding blog:", error);
         alert("Lỗi khi thêm blog, vui lòng thử lại!");
-    });
-};
+      });
+  };
+  
 
-
-const handleEditBlog = async (newImage) => {
+  const handleEditBlog = async (newImage) => {
+    // Validate title
+    const isValidTitle = (title) => /^[a-zA-Z0-9\s]{10,100}$/.test(title);
+    if (!isValidTitle(editBlog.title)) {
+      alert("Tiêu đề không hợp lệ! Phải có từ 10-100 ký tự và không chứa ký tự đặc biệt.");
+      return;
+    }
+  
+    // Validate content
+    const isValidContent = (content) => content.trim().length >= 50;
+    if (!isValidContent(editBlog.content)) {
+      alert("Nội dung quá ngắn! Phải có ít nhất 50 ký tự.");
+      return;
+    }
+  
     const formData = new FormData();
     formData.append("title", editBlog.title);
     formData.append("content", editBlog.content);
@@ -53,36 +80,37 @@ const handleEditBlog = async (newImage) => {
     if (newImage) {
       formData.append("img", newImage);
     }
-
+  
     try {
       const response = await fetch(`http://localhost:9999/api/blogs/${editBlog._id}`, {
         method: "PUT",
         body: formData,
       });
-
+  
       if (!response.ok) throw new Error("Failed to update blog");
-
+  
       const updatedBlog = await response.json();
       console.log("Updated blog:", updatedBlog);
-
+  
       // ✅ Cập nhật lại danh sách blogs ngay lập tức
       setBlogs((prevBlogs) =>
         prevBlogs.map((blog) =>
           blog._id === updatedBlog._id ? updatedBlog : blog
         )
       );
-
+  
       // ✅ Đóng modal + reset dữ liệu chỉnh sửa
       setShowEditModal(false);
       setEditBlog(null);
-
+  
       // ✅ Hiển thị thông báo thành công
       alert("Sửa blog thành công! 🎉");
     } catch (error) {
       console.error("Error updating blog:", error);
       alert("Có lỗi xảy ra khi sửa blog! ❌");
     }
-};
+  };
+  
 
 // ✅ Xóa ảnh khi đóng modal
 const handleCloseEditModal = () => {
