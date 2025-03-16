@@ -299,6 +299,14 @@ exports.changePassword = async (req, res) => {
     const { email, oldPassword, newPassword } = req.body;
     console.log(req.body);
 
+    // Kiểm tra mật khẩu mới có đủ mạnh không
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message: "Mật khẩu mới phải có ít nhất 12 ký tự, bao gồm ít nhất một chữ cái thường, một chữ cái hoa, một số và một ký tự đặc biệt."
+      });
+    }
+
     // Tìm tài khoản dựa trên email (user_name)
     const account = await Account.findOne({ user_name: email });
     if (!account) {
