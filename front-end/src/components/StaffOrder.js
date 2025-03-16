@@ -95,7 +95,7 @@ const StaffOrder = () => {
                     <Accordion>
                         {orders.map(order => (
                             <Accordion.Item eventKey={order._id} key={order._id}>
-                                <Accordion.Header>{order.bill.user_id.user_name} - {new Date(order.bill.createdAt).toLocaleString()}</Accordion.Header>
+                                <Accordion.Header>{order.bill.user_id.user_name} - {new Date(order.bill.created_at).toLocaleString()}</Accordion.Header>
                                 <Accordion.Body>
                                     <p><strong>Địa chỉ:</strong> {order.bill.customer_address}</p>
                                     <p><strong>Số điện thoại:</strong> {order.bill.customer_phone}</p>
