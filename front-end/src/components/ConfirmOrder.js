@@ -155,7 +155,13 @@ const ConfirmOrderStaff = () => {
         </div>
         <div className="col-md-4">
           <h2 className="mb-4">Thông tin người dùng</h2>
-          
+          <form>
+            <div className="mb-3">
+              <label className="form-label">Họ và Tên</label>
+              <input type="text" className="form-control" onChange={(e) => setUserInfo({ ...userInfo, full_name: e.target.value })} />
+            </div>
+
+          </form>
           <button className="btn btn-primary mt-3" onClick={handlePayment}>Thanh toán</button>
         </div>
       </div>
