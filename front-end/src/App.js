@@ -27,6 +27,7 @@ import ConfirmOrderStaff from './components/ConfirmOrder';
 import CartStaff from './components/CartStaff';
 import UserProfile from './components/UserProfile';
 import TransactionHistory from './components/TransactionHistory';
+import OrderHistory from './components/OrderHistory';
 const App = () => {
   return (
 
@@ -51,7 +52,7 @@ const App = () => {
           <Route path="/admin/manage-blog" element={<ManageBlog />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/transaction-history" element={<TransactionHistory />} />
-
+          <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/blogs" element={<Blog />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/payments" element={<QR/>} />

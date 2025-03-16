@@ -129,9 +129,31 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+const getOnlinePaidOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({ order_type: 'online' })
+            .populate({
+                path: 'bill',
+                // match: { isPaid: true }, // Only fetch paid bills
+                populate: [
+                    { path: 'user_id', model: 'Account' },
+                    { path: 'items.item_id', model: 'Dish' }
+                ]
+            });
+
+        console.log('Online paid orders with populated data:', orders);
+
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error('Error fetching online paid orders:', error);
+        res.status(500).json({ message: 'Error fetching online paid orders', error });
+    }
+};
+
 module.exports = {
     createOrder,
     getStaffOrders,
     getOrderDetails,
-    updateOrderStatus // Export the new function
+    updateOrderStatus,
+    getOnlinePaidOrders // Export the new function
 };
