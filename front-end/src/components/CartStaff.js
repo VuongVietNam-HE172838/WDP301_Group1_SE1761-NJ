@@ -65,7 +65,7 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                             src={item.dish.img || 'https://via.placeholder.com/150'}
                                             alt={item.dish.name}
                                             onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
-                                            style={{ height: '150px', objectFit: 'cover', borderRadius: '5px' }}
+                                            style={{ height: '150px', width:'150px', objectFit: 'cover', borderRadius: '5px' }}
                                         />
                                     </Col>
                                     <Col md={8}>
