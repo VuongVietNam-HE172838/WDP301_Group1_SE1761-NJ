@@ -48,10 +48,16 @@ export default function ModalChangePassword({ show, handleClose, email }) {
       toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
-
+  const handleCloseModal = () => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    handleClose();
+  };
+  
   return (
-    <Modal show={show} onHide={handleClose} centered>
-      <Modal.Header closeButton>
+<Modal show={show} onHide={handleCloseModal} centered>
+<Modal.Header closeButton>
         <Modal.Title>Đổi Mật Khẩu</Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -83,9 +89,10 @@ export default function ModalChangePassword({ show, handleClose, email }) {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} disabled={loading}>
-          Hủy
-        </Button>
+      <Button variant="secondary" onClick={handleCloseModal} disabled={loading}>
+  Hủy
+</Button>
+
         <Button variant="primary" onClick={handleSave} disabled={loading}>
           {loading ? "Đang xử lý..." : "Lưu"}
         </Button>
