@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Button, Card, Offcanvas, Badge } from 'react-bootstrap';
 import axios from 'axios';
+import { toast } from 'react-toastify'; // Import toast
+import 'react-toastify/dist/ReactToastify.css'; // Import toastify CSS
 import Cart from './Cart';
 import CartIcon from './CartIcon';
+import { ToastContainer } from 'react-toastify'; // Import ToastContainer
+import { useNavigate } from "react-router-dom";
+
 
 const Menu = () => {
+    const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [dishes, setDishes] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -33,7 +39,7 @@ const Menu = () => {
             if (!selectedCategory) return;
             try {
                 const response = await axios.get(`http://localhost:9999/menu/${selectedCategory}/dishes`);
-                setDishes(response.data);
+                setDishes(response.data); // Ensure the response includes the `quantity` field
             } catch (error) {
                 console.error("Error fetching dishes:", error);
             }
@@ -74,7 +80,13 @@ const Menu = () => {
 
     const addToCart = async (dish) => {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+            toast.error("Bạn cần đăng nhập để thêm vào giỏ hàng!"); // Show error if not logged in
+            setTimeout(() => {
+                navigate("/login");
+              }, 3500); // Wait for 5 seconds before navigating
+            return;
+        }
 
         try {
             const response = await axios.post('http://localhost:9999/api/cart/add', {
@@ -95,9 +107,10 @@ const Menu = () => {
                 } else {
                     setCartItems([...cartItems, { ...newCartItem, dish }]);
                 }
+                toast.success("Thêm vào giỏ hàng thành công!"); // Show success message
             }
         } catch (error) {
-            console.error("Error adding item to cart:", error);
+            toast.error("Lỗi khi thêm vào giỏ hàng!"); // Show error message
         }
     };
 
@@ -146,6 +159,8 @@ const Menu = () => {
 
     return (
         <Container fluid>
+            {/* Add ToastContainer */}
+            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
             <Row>
                 {/* Main Content */}
                 <Col md={{ span: 8, offset: 2 }}>
@@ -195,6 +210,9 @@ const Menu = () => {
                                             <Card.Text className="fw-bold text-danger">
                                                 {dish.optional?.price ? `${dish.optional.price.toLocaleString()} đ` : 'N/A'}
                                             </Card.Text>
+                                            <Card.Text className="text-muted">
+                                                Số lượng còn lại: <span className="fw-bold">{dish.quantity}</span>
+                                            </Card.Text>
                                             <Button variant="danger" className="w-100 fw-bold" onClick={() => addToCart(dish)} disabled={dish.quantity === 0}>Thêm</Button>
                                         </Card.Body>
                                     </Card>
@@ -220,6 +238,7 @@ const Menu = () => {
                 </Offcanvas.Body>
             </Offcanvas>
         </Container>
+        
     );
 };
 

@@ -3,21 +3,18 @@ const Role = require('../models/role');
 
 const adminMiddleware = async (req, res, next) => {
   try {
-    console.log('Checking admin role...: ', req.user); // Log req.user
-    const account = await Account.findById(req.user.accountId).populate('role_id');
-    console.log('Account:', account);
+    const account = await Account.findById(req.user._id).populate('role_id');
     if (!account) {
-      return res.status(404).json({ message: 'Account not found' });
+      return res.status(404).json({ message: 'admin not found' });
     }
     if (!account.role_id) {
       return res.status(500).json({ message: 'Role not found for account' });
     }
-    if (account.role_id.name !== 'admin') {
+    if (account.role_id.name !== 'ADMIN') {
       return res.status(403).json({ message: 'Access denied' });
     }
     next();
   } catch (error) {
-    console.log('Error checking admin role:', error.message);
     res.status(500).json({ message: 'Error checking admin role', error });
   }
 };

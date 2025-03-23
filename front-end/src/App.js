@@ -28,6 +28,8 @@ import CartStaff from './components/CartStaff';
 import UserProfile from './components/UserProfile';
 import TransactionHistory from './components/TransactionHistory';
 import OrderHistory from './components/OrderHistory';
+import AdminStatistics from './components/AdminStatistics';
+import ManageAccounts from './components/ManageAccounts';
 const App = () => {
   return (
 
@@ -47,7 +49,8 @@ const App = () => {
           <Route path="/admin" element={<AdminDashboard />}>
             <Route path="verify-accounts" element={<AccountList />} />
             <Route path="billing" element={<BillHistory />} />
-
+            <Route path="statistics" element={<AdminStatistics />} />
+            <Route path="manage-account" element={<ManageAccounts />} />
           </Route>
           <Route path="/admin/manage-blog" element={<ManageBlog />} />
           <Route path="/profile" element={<UserProfile />} />

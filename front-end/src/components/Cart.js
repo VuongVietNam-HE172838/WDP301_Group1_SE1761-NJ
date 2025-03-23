@@ -37,7 +37,20 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const handleUpdateQuantity = (dishId, quantity, maxQuantity) => {
         if (quantity <= 0) {
             removeFromCart(dishId);
-        } else if (quantity <= maxQuantity) {
+        } else if (quantity > maxQuantity) {
+            updateCartItemQuantity(dishId, maxQuantity); // Set to max quantity if exceeded
+        } else {
+            updateCartItemQuantity(dishId, quantity);
+        }
+    };
+
+    const handleQuantityInputChange = (dishId, value, maxQuantity) => {
+        const quantity = parseInt(value, 10);
+        if (isNaN(quantity) || quantity <= 0) {
+            updateCartItemQuantity(dishId, 1); // Set to 1 if invalid or less than 1
+        } else if (quantity > maxQuantity) {
+            updateCartItemQuantity(dishId, maxQuantity); // Set to max quantity if exceeded
+        } else {
             updateCartItemQuantity(dishId, quantity);
         }
     };
@@ -74,6 +87,9 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                         <Card.Text className="fw-bold text-danger">
                                             {item.dish.optional?.price ? `${item.dish.optional.price.toLocaleString()} đ` : 'Chưa có giá'}
                                         </Card.Text>
+                                        <Card.Text className="text-muted">
+                                            <strong>Số lượng còn lại:</strong> {item.dish.quantity}
+                                        </Card.Text>
                                         <div className="d-flex justify-content-end align-items-center mt-2">
                                             <Button 
                                                 variant="secondary" 
@@ -82,7 +98,13 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                             >
                                                 -
                                             </Button>
-                                            <span className="mx-2">{item.quantity}</span>
+                                            <Form.Control
+                                                type="number"
+                                                value={item.quantity}
+                                                onChange={(e) => handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity)}
+                                                className="mx-2"
+                                                style={{ width: '60px', textAlign: 'center' }}
+                                            />
                                             <Button 
                                                 variant="secondary" 
                                                 size="sm" 

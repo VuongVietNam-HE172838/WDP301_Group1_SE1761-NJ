@@ -10,7 +10,7 @@ const orderSchema = new Schema({
   note: { type: String, required: false },
   updated_at: { type: Date, default: Date.now },
   payment_at: { type: Date }
-});
+}, { timestamps: true }); // Enable timestamps to manage createdAt and updatedAt automatically
 
 const Order = mongoose.model('Order', orderSchema);
 
