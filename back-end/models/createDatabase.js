@@ -9,7 +9,7 @@ const Role = require('./role');
 
 const createDatabase = async () => {
   try {
-    // await mongoose.connect("mongodb+srv://quanpdhe170415:aEjUnpW2mk3nqVYX@wdp.qcw4k.mongodb.net/wdp?retryWrites=true&w=majority&appName=Cluster0");
+    // Connect to MongoDB
     await mongoose.connect("mongodb://localhost:27017/wdp");
     console.log('MongoDB connected');
 
@@ -21,7 +21,8 @@ const createDatabase = async () => {
     // Insert roles
     const roles = [
       { name: 'ADMIN' },
-      { name: 'USER' }
+      { name: 'USER' },
+      { name: 'STAFF' }
     ];
     const insertedRoles = await Role.insertMany(roles);
 
@@ -41,7 +42,20 @@ const createDatabase = async () => {
     });
     await adminAccount.save();
 
-    console.log('Collections created, roles and admin account inserted successfully');
+    // Create AccountDetail for admin account
+    const adminAccountDetail = new AccountDetail({
+      account_id: adminAccount._id,
+      full_name: 'Admin User',
+      phone_number: '123456789',
+      birth_of_date: new Date('1990-01-01'),
+      id_number: '123456789',
+      gender: 'Male',
+      address: 'Admin Address',
+      profile_picture: ''
+    });
+    await adminAccountDetail.save();
+
+    console.log('Collections created, roles, admin account, and admin account detail inserted successfully');
     mongoose.connection.close();
   } catch (err) {
     console.error('Error creating collections:', err.message);

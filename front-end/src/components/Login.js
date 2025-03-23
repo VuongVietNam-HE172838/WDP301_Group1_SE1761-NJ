@@ -12,6 +12,7 @@ const Login = () => {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [recaptchaToken, setRecaptchaToken] = useState('');
+  const [errors, setErrors] = useState({}); // lưu lỗi hiển thị dưới input
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -19,16 +20,14 @@ const Login = () => {
 
   const validate = () => {
     const newErrors = {};
-
-    // Kiểm tra Email hợp lệ
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!userName.trim()) {
       newErrors.userName = 'Địa chỉ Email là bắt buộc';
     } else if (!emailRegex.test(userName)) {
       newErrors.userName = 'Địa chỉ Email không hợp lệ';
     }
 
-    // Kiểm tra Mật khẩu
     if (!password) {
       newErrors.password = 'Mật khẩu là bắt buộc';
     }
@@ -36,67 +35,73 @@ const Login = () => {
     return newErrors;
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const newErrors = validate();
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      Object.values(newErrors).forEach(error => toast.error(error));
+      return;
+    }
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_name: userName, password, recaptchaToken }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('accountDetail', JSON.stringify(data.accountDetail));
+        if (data.accountDetail.role === 'ADMIN') {
+          window.location.href = '/admin'; // Navigate to admin dashboard
+        } else {
+          window.location.href = '/'; // Navigate to the home page for regular users
+        }
+      } else {
+        // Xử lý lỗi từ backend
+        const msg = data.message || 'Đăng nhập thất bại';
+        toast.error(msg);
+
+        if (msg.includes("Mật khẩu")) {
+          setErrors({ password: msg });
+        } else if (msg.includes("không tồn tại")) {
+          setErrors({ userName: msg });
+        } else if (msg.includes("xác minh") || msg.includes("khóa")) {
+          setErrors({ userName: msg }); // Có thể để bên email cho dễ hiểu
+        } else {
+          setErrors({});
+        }
+      }
+    } catch (err) {
+      console.error("Lỗi kết nối:", err);
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+    }
+  };
+
   const handleGoogleSuccess = async (response) => {
     const { credential } = response;
-    // Gửi credential đến back-end để xác thực
     const res = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/google-login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tokenId: credential }),
     });
     const data = await res.json();
-    // Xử lý phản hồi từ back-end
-    console.log(data);
 
-    // Lưu thông tin vào localStorage
     localStorage.setItem('token', data.token);
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('accountDetail', JSON.stringify(data.accountDetail));
-
-    // Chuyển hướng người dùng về path "/"
     window.location.href = '/';
   };
 
   const handleGoogleFailure = (error) => {
     console.error('Google login failed', error);
     toast.error('Google login failed');
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const newErrors = validate();
-    if (Object.keys(newErrors).length > 0) {
-      Object.values(newErrors).forEach(error => {
-        toast.error(error);
-      });
-    } else {
-      // Gửi thông tin đăng nhập đến back-end để xác thực
-      const res = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/authen/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_name: userName, password: password, recaptchaToken }),
-      });
-      const data = await res.json();
-      // Xử lý phản hồi từ back-end
-      if (res.ok) {
-        console.log(data);
-
-        // Lưu thông tin vào localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        localStorage.setItem('accountDetail', JSON.stringify(data.accountDetail));
-
-        // Chuyển hướng người dùng về path "/"
-        window.location.href = '/';
-      } else {
-        console.error('Login failed', data.message);
-        toast.error(data.message); // Hiển thị thông báo lỗi dưới dạng popup
-      }
-    }
   };
 
   const handleRecaptchaChange = (token) => {
@@ -107,12 +112,10 @@ const Login = () => {
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
       <div className="container d-flex justify-content-center align-items-center min-vh-100">
         <div className="row shadow-lg rounded overflow-hidden border bg-white mx-auto" style={{ maxWidth: "100%", width: "950px" }}>
-          {/* Left Section: Banner */}
           <div className="d-none d-lg-block col-lg-7 p-0">
             <img src={loginBanner2} alt="Login Banner" className="img-fluid w-100 h-100" />
           </div>
 
-          {/* Right Section: Login Form */}
           <div className="col-12 col-lg-5 p-4 d-flex flex-column justify-content-center">
             <p className="text-center text-muted fs-5 mt-3">Chào mừng trở lại!</p>
 
@@ -121,11 +124,14 @@ const Login = () => {
               <label className="form-label fw-bold">Địa chỉ Email</label>
               <input
                 type="email"
-                className="form-control"
+                className={`form-control ${errors.userName ? 'is-invalid' : ''}`}
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 required
               />
+              {errors.userName && (
+                <div className="invalid-feedback">{errors.userName}</div>
+              )}
             </div>
 
             {/* Password Field */}
@@ -134,7 +140,7 @@ const Login = () => {
               <div className="input-group">
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="form-control"
+                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -143,17 +149,12 @@ const Login = () => {
                   {showPassword ? <IconEye size={18} /> : <IconEyeOff size={18} />}
                 </span>
               </div>
+              {errors.password && (
+                <div className="invalid-feedback d-block">{errors.password}</div>
+              )}
               <a href="/forgetpassword" className="d-block text-end text-muted small mt-2">
                 Quên mật khẩu?
               </a>
-            </div>
-
-            {/* reCAPTCHA */}
-            <div className="mt-3">
-              <ReCAPTCHA
-                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-                onChange={handleRecaptchaChange}
-              />
             </div>
 
             {/* Login Button */}

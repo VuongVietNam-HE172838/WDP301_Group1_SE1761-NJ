@@ -110,11 +110,11 @@ function Header() {
                         Chi tiết Profile
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link className="dropdown-item" to="/transaction-history">
                         Lịch sử giao dịch
                       </Link>
-                    </li>
+                    </li> */}
                     <li>
                       <Link className="dropdown-item" to="/order-history">
                         Lịch sử đặt hàng

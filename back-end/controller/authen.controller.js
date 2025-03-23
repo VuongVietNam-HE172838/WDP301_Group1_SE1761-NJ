@@ -8,7 +8,7 @@ const { Account, AccountDetail, Role } = require("../models");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME = 2 * 60 * 60 * 1000; // 2 giờ
+const LOCK_TIME = 1 * 60 * 1000; // 1 minute
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -23,6 +23,7 @@ exports.login = async (req, res) => {
 
   try {
     const account = await Account.findOne({ user_name });
+    console.log(account);
     if (!account) {
       return res
         .status(404)
@@ -48,6 +49,7 @@ exports.login = async (req, res) => {
       account.loginAttempts += 1;
       if (account.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
         account.lockUntil = Date.now() + LOCK_TIME;
+        account.loginAttempts = 0;
       }
       await account.save();
       return res.status(403).json({ message: "Mật khẩu không chính xác!" });
@@ -168,34 +170,41 @@ exports.register = async (req, res) => {
   const { fullName, email, phoneNumber, password } = req.body;
 
   try {
-    // Kiểm tra xem email đã được sử dụng chưa
+    // Check if the email is already used
     let account = await Account.findOne({ user_name: email });
     if (account) {
-      return res.status(400).json({ message: "Email đã tồn tại trong hệ thống!" });
+      if (!account.isVerified) {
+        // If the account exists but is not verified, delete it
+        await Account.deleteOne({ _id: account._id });
+        await AccountDetail.deleteOne({ account_id: account._id });
+      } else {
+        // If the account is verified, return an error
+        return res.status(400).json({ message: "Email đã tồn tại trong hệ thống!" });
+      }
     }
 
-    // Tìm role USER
+    // Find the USER role
     const userRole = await Role.findOne({ name: "USER" });
     if (!userRole) {
       return res.status(500).json({ message: "Role USER not found" });
     }
 
-    // Tạo mật khẩu đã được mã hóa
+    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Tạo tài khoản mới
+    // Create a new account
     account = new Account({
       user_name: email,
       email,
       password: hashedPassword,
       role_id: userRole._id,
       start_working: new Date(),
-      isVerified: false // Đặt isVerified thành false
+      isVerified: false // Set isVerified to false
     });
     await account.save();
 
-    // Tạo AccountDetail cho tài khoản mới
+    // Create AccountDetail for the new account
     const accountDetail = new AccountDetail({
       account_id: account._id,
       full_name: fullName,
@@ -205,14 +214,14 @@ exports.register = async (req, res) => {
       gender: "",
       address: "",
       profile_picture: "",
-      refresh_token: "", // Khởi tạo refresh_token rỗng
+      refresh_token: "", // Initialize refresh_token as empty
     });
     await accountDetail.save();
 
-    // Tạo token xác nhận
-    const token = jwt.sign({ accountId: account._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Generate a verification token
+    const token = jwt.sign({ accountId: account._id }, process.env.JWT_SECRET, { expiresIn: '3d' });
 
-    // Gửi email xác nhận
+    // Send a verification email
     const mailOptions = {
       from: `"Chăm sóc khách hàng OrderingSystem" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -225,12 +234,8 @@ exports.register = async (req, res) => {
           <div style="text-align: center; margin: 20px 0;">
             <a href="http://localhost:3000/verify-email?token=${token}" style="background-color: #dc3545; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Xác nhận tài khoản</a>
           </div>
-          <p>Đường link test product:</p>
-          <div style="text-align: center; margin: 20px 0;">
-            <a href="https://foodtripvn.site/verify-email?token=${token}" style="background-color: #dc3545; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Xác nhận tài khoản</a>
-          </div>
           <p>Nếu bạn không yêu cầu tạo tài khoản này, vui lòng bỏ qua email này.</p>
-          <p style="color: #dc3545; font-weight: bold;">Đường link này sẽ hết hạn sau 7 ngày. Nếu bạn có câu hỏi, vui lòng phản hồi lại email này!</p>
+          <p style="color: #dc3545; font-weight: bold;">Đường link này sẽ hết hạn sau 3 ngày. Nếu bạn có câu hỏi, vui lòng phản hồi lại email này!</p>
           <p>Trân trọng,</p>
           <p>Chăm sóc khách hàng OrderingSystem</p>
         </div>

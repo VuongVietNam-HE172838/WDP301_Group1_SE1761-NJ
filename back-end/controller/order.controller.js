@@ -134,21 +134,25 @@ const getOnlinePaidOrders = async (req, res) => {
         const orders = await Order.find({ order_type: 'online' })
             .populate({
                 path: 'bill',
-                // match: { isPaid: true }, // Only fetch paid bills
+                match: { isPaid: true }, // Only fetch paid bills
                 populate: [
                     { path: 'user_id', model: 'Account' },
                     { path: 'items.item_id', model: 'Dish' }
                 ]
             });
 
-        console.log('Online paid orders with populated data:', orders);
+        // Filter out orders where the bill is null (because isPaid was false)
+        const filteredOrders = orders.filter(order => order.bill !== null);
 
-        res.status(200).json({ orders });
+        console.log('Online paid orders with populated data:', filteredOrders);
+
+        res.status(200).json({ orders: filteredOrders });
     } catch (error) {
         console.error('Error fetching online paid orders:', error);
         res.status(500).json({ message: 'Error fetching online paid orders', error });
     }
 };
+
 
 module.exports = {
     createOrder,
