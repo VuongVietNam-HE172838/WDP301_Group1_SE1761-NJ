@@ -1,11 +1,13 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, Routes, Route } from 'react-router-dom';
 import ManageCategory from './ManageCategory';
 import ManageDish from './ManageDish';
-import '../AdminDashboard.css';
 import ManageBlog from './ManageBlog';
+import '../AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const [activeTab, setActiveTab] = useState("");
+
   return (
     <div className="container-fluid">
       <div className="row">
@@ -15,32 +17,56 @@ const AdminDashboard = () => {
             <h4 className="text-center">Admin</h4>
             <ul className="nav flex-column">
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/verify-accounts">
-                  <i className='bx bxs-user'></i> Danh sách tài khoản
+                <Link 
+                  className={`nav-link ${activeTab === "accounts" ? "active" : ""}`} 
+                  
+                  onClick={() => setActiveTab("accounts")}
+                >
+                  <i className='bx bxs-user'></i> Manage Account
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/billing">
+                <Link 
+                  className={`nav-link ${activeTab === "billing" ? "active" : ""}`} 
+                 
+                  onClick={() => setActiveTab("billing")}
+                >
                   <i className='bx bxs-receipt'></i> Danh sách hóa đơn
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/manage-category">
+                <Link 
+                  className={`nav-link ${activeTab === "category" ? "active" : ""}`} 
+                  
+                  onClick={() => setActiveTab("category")}
+                >
                   <i className='bx bxs-box'></i> Manage Category
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/manage-dish">
+                <Link 
+                  className={`nav-link ${activeTab === "dish" ? "active" : ""}`} 
+                 
+                  onClick={() => setActiveTab("dish")}
+                >
                   <i className='bx bxs-food'></i> Manage Dish
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/manage-blog">
+                <Link 
+                  className={`nav-link ${activeTab === "blog" ? "active" : ""}`} 
+                  
+                  onClick={() => setActiveTab("blog")}
+                >
                   <i className='bx bxs-food'></i> Manage Blog
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/admin/reports">
+                <Link 
+                  className={`nav-link ${activeTab === "reports" ? "active" : ""}`} 
+                 
+                  onClick={() => setActiveTab("reports")}
+                >
                   <i className='bx bxs-report'></i> Báo cáo
                 </Link>
               </li>
@@ -50,10 +76,15 @@ const AdminDashboard = () => {
 
         {/* Main Content */}
         <main className="col-md-10 ms-sm-auto px-md-4">
-          {/* Hiển thị component dựa trên route */}
-          <ManageDish />
-          <ManageCategory />
-          <ManageBlog/>
+          {activeTab === "dish" && <ManageDish />}
+          {activeTab === "category" && <ManageCategory />} 
+          {/* {activeTab === "accounts" && <ManageAccount />} */}
+          {/* {activeTab === "billing" && <ManageBill />}  */}
+          {activeTab === "blog" && <ManageBlog />} 
+          {/* {activeTab === "reports" && <Managereports />}  */}
+
+
+        
         </main>
       </div>
     </div>

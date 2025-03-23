@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Button, Form, Modal } from "react-bootstrap";
+import { ToastContainer, toast } from "react-toastify";
+
 
 const ManageCategory = () => {
   const [categories, setCategories] = useState([]);
-  const [editedCategory, setEditedCategory] = useState(null); // Lưu danh mục đang chỉnh sửa
-  const [newCategoryName, setNewCategoryName] = useState(""); // Lưu tên danh mục mới
-  const [showAddModal, setShowAddModal] = useState(false); // Điều khiển modal thêm danh mục
+  const [editedCategory, setEditedCategory] = useState(null); 
+  const [newCategoryName, setNewCategoryName] = useState(""); 
+  const [showAddModal, setShowAddModal] = useState(false); 
 
   useEffect(() => {
     fetchCategories();
@@ -17,7 +19,7 @@ const ManageCategory = () => {
       const response = await axios.get("http://localhost:9999/menu/menu");
       setCategories(response.data);
     } catch (error) {
-      console.error("Lỗi khi lấy danh mục:", error);
+      toast.error("Lỗi khi lấy danh mục!"); 
     }
   };
 
@@ -26,42 +28,32 @@ const ManageCategory = () => {
   };
 
   const handleCancel = () => {
-    setEditedCategory(null); // Hủy chỉnh sửa
+    setEditedCategory(null);
   };
 
   const handleUpdate = async () => {
     if (!editedCategory || !editedCategory.name.trim()) {
-      alert("Tên danh mục không được để trống!");
+      toast.warning("Tên danh mục không được để trống!");
       return;
     }
 
-    const updatedData = { name: editedCategory.name };
-
-    // Kiểm tra ID trước khi gửi
     if (!editedCategory.id || editedCategory.id.length !== 24) {
-      console.error("❌ ID không hợp lệ!");
-      alert("Lỗi: ID không hợp lệ.");
+      toast.error("ID không hợp lệ!");
       return;
     }
-
-    console.log("🔥 Đang gửi dữ liệu cập nhật:", updatedData);
-    console.log("ID danh mục đang cập nhật:", editedCategory.id);  // Kiểm tra giá trị ID
 
     try {
-      const response = await axios.put(
+      await axios.put(
         `http://localhost:9999/menu/category/${editedCategory.id}`,
-        updatedData,
-        {
-          headers: { "Content-Type": "application/json" }
-        }
+        { name: editedCategory.name },
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      console.log("✅ Cập nhật thành công:", response.data);
-      fetchCategories(); // Cập nhật danh sách mới
-      setEditedCategory(null); // Reset trạng thái
+      toast.success("Cập nhật danh mục thành công!"); 
+      fetchCategories(); 
+      setEditedCategory(null);
     } catch (error) {
-      console.error("❌ Lỗi khi cập nhật danh mục:", error.response ? error.response.data : error.message);
-      alert("Lỗi khi cập nhật, vui lòng kiểm tra lại.");
+      toast.error("Lỗi khi cập nhật danh mục!"); 
     }
   };
 
@@ -69,53 +61,47 @@ const ManageCategory = () => {
     if (window.confirm("Bạn có chắc muốn xóa danh mục này không?")) {
       try {
         await axios.delete(`http://localhost:9999/menu/category/${id}`);
-        fetchCategories(); // Load lại danh sách sau khi xóa
+        toast.success("Xóa danh mục thành công!"); 
+        fetchCategories(); 
       } catch (error) {
-        console.error("Lỗi khi xóa danh mục:", error);
+        toast.error("Lỗi khi xóa danh mục!"); 
       }
     }
   };
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
-      alert("Tên danh mục không được để trống!");
+      toast.warning("Tên danh mục không được để trống!");
       return;
     }
   
-    const userId = localStorage.getItem("userId"); // Hoặc từ token JWT nếu lưu trong đó
-    const isAdmin = localStorage.getItem("role") === "admin"; // Kiểm tra nếu người dùng là admin
-    
-    // Nếu không phải admin, gán userId vào created_by, nếu là admin thì gán "admin"
+    const userId = localStorage.getItem("userId"); 
+    const isAdmin = localStorage.getItem("role") === "admin"; 
     const createdBy = isAdmin ? "admin" : userId;
     
     const newCategory = { 
       name: newCategoryName,
       created_by: createdBy,
-      updated_by: createdBy, // Cũng có thể gán là userId hoặc "admin" tùy nhu cầu
+      updated_by: createdBy, 
     };
   
     try {
-      const response = await axios.post("http://localhost:9999/menu/category", newCategory);
-      console.log("✅ Thêm danh mục thành công:", response.data);
-      fetchCategories(); // Cập nhật danh sách danh mục
-      setNewCategoryName(""); // Reset tên danh mục
-      setShowAddModal(false); // Đóng modal
+      await axios.post("http://localhost:9999/menu/category", newCategory);
+      toast.success("Thêm danh mục thành công!"); 
+      fetchCategories(); 
+      setNewCategoryName(""); 
+      setShowAddModal(false); 
     } catch (error) {
-      console.error("❌ Lỗi khi thêm danh mục:", error);
-      alert("Lỗi khi thêm danh mục.");
+      toast.error("Lỗi khi thêm danh mục!"); 
     }
   };
-  
-  
-  
 
   return (
     <div className="container">
-      <h2 className="text-center my-3">Quản lý Danh mục</h2>
+      <h2 className="text-center my-3">Manage Category</h2>
 
-      {/* Nút Thêm danh mục */}
       <Button variant="primary" onClick={() => setShowAddModal(true)} className="mb-3">
-      Add New Category
+        Add New Category
       </Button>
 
       {/* Modal thêm danh mục */}
@@ -144,11 +130,12 @@ const ManageCategory = () => {
         </Modal.Footer>
       </Modal>
 
+      {/* Bảng danh mục */}
       <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>ID</th>
-            <th>Namee Category</th>
+            <th>Name Category</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -194,6 +181,9 @@ const ManageCategory = () => {
           ))}
         </tbody>
       </Table>
+
+      {/* Component hiển thị thông báo */}
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

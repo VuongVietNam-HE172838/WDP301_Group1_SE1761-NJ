@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Button, Form, Modal } from "react-bootstrap";
+import { toast,ToastContainer } from "react-toastify";
+
 
 const ManageDish = () => {
     const [dishes, setDishes] = useState([]);
@@ -17,8 +19,7 @@ const ManageDish = () => {
     const [editDish, setEditDish] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" }); // Track sorting configuration
-
+    const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
     useEffect(() => {
         fetchDishes();
         fetchCategories();
@@ -41,6 +42,7 @@ const ManageDish = () => {
             setDishes(dishesWithCategoryName);
         } catch (error) {
             console.error("Error fetching dishes:", error);
+            toast.error("Lỗi khi tải danh sách món ăn!");
         }
     };
 
@@ -50,17 +52,18 @@ const ManageDish = () => {
             setCategories(response.data);
         } catch (error) {
             console.error("Error fetching categories:", error);
+            toast.error("Lỗi khi tải danh mục!");
         }
     };
 
     const handleAddDish = async () => {
         if (!newDish.name.trim() || !newDish.price.trim() || !newDish.size.trim() || !newDish.category_id || !newDish.description.trim()) {
-            alert("All fields must be filled!");
+            toast.warning("Vui lòng điền đầy đủ thông tin!");
             return;
         }
 
         try {
-            const response = await axios.post("http://localhost:9999/menu/dishes", newDish, {
+            await axios.post("http://localhost:9999/menu/dishes", newDish, {
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -68,9 +71,10 @@ const ManageDish = () => {
             fetchDishes();
             setNewDish({ name: "", price: "", size: "", img: "", quantity: "", category_id: "", description: "" });
             setShowAddModal(false);
+            toast.success("Thêm món ăn thành công!");
         } catch (error) {
             console.error("Error adding dish:", error);
-            alert("Error adding dish.");
+            toast.error("Lỗi khi thêm món ăn!");
         }
     };
 
@@ -85,12 +89,12 @@ const ManageDish = () => {
 
     const handleEditDish = async () => {
         if (!editDish?._id) {
-            alert("Dish ID is missing.");
+            toast.error("Lỗi: Món ăn không có ID!");
             return;
         }
 
         if (!editDish?.name?.trim() || !String(editDish?.price)?.trim() || !editDish?.size?.trim() || !editDish?.category_id || !editDish?.description?.trim()) {
-            alert("All fields must be filled!");
+            toast.warning("Vui lòng điền đầy đủ thông tin!");
             return;
         }
 
@@ -113,21 +117,26 @@ const ManageDish = () => {
             fetchDishes();
             setShowEditModal(false);
             setEditDish(null);
+            toast.success("Cập nhật món ăn thành công!");
         } catch (error) {
             console.error("Error updating dish:", error);
-            alert("Error updating dish.");
+            toast.error("Lỗi khi cập nhật món ăn!");
         }
     };
 
     const handleDeleteDish = async (dishId) => {
-        try {
-            await axios.delete(`http://localhost:9999/menu/dishes/${dishId}`);
-            fetchDishes();
-        } catch (error) {
-            console.error("Error deleting dish:", error);
-            alert("Error deleting dish.");
+        if (window.confirm("Bạn có chắc chắn muốn xóa món ăn này?")) {
+            try {
+                await axios.delete(`http://localhost:9999/menu/dishes/${dishId}`);
+                fetchDishes();
+                toast.success("Xóa món ăn thành công! 🗑️");
+            } catch (error) {
+                console.error("Error deleting dish:", error);
+                toast.error("Lỗi khi xóa món ăn, vui lòng thử lại! ❌");
+            }
         }
     };
+    
 
     // Sorting function
     const sortDishes = (key) => {
@@ -378,6 +387,7 @@ const ManageDish = () => {
                     ))}
                 </tbody>
             </Table>
+            <ToastContainer position="top-right" autoClose={3000} />
         </div>
     );
 };
