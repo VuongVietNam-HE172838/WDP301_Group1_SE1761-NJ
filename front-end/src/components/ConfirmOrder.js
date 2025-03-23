@@ -5,6 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Modal, Button } from 'react-bootstrap';
 
 const ConfirmOrderStaff = () => {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ const ConfirmOrderStaff = () => {
   // Set initial delivery time to 16 minutes from now
   const initialDeliveryTime = new Date(new Date().getTime() + 16 * 60000);
   const [deliveryTime, setDeliveryTime] = useState(initialDeliveryTime);
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -70,8 +74,6 @@ const ConfirmOrderStaff = () => {
   };
 
   const handlePayment = async () => {
-    
-
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Bạn cần đăng nhập để thực hiện chức năng này!");
@@ -93,7 +95,8 @@ const ConfirmOrderStaff = () => {
           total_price: totalPrice,
           user_info: userInfo, // Include user info
           delivery_method: deliveryMethod, // Include delivery method
-          delivery_time: deliveryTime // Include delivery time
+          delivery_time: deliveryTime, // Include delivery time
+          payment_method: selectedPaymentMethod // Include payment method
         }), // Set order type to 'counter'
       });
 
@@ -103,7 +106,11 @@ const ConfirmOrderStaff = () => {
         const data = await response.json();
         console.log('Order created:', data); // Log the response data
         toast.success("Đơn hàng đã được tạo thành công!");
-        navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill } });
+        if (selectedPaymentMethod === 'cash') {
+          navigate("/staff-order");
+        } else {
+          navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill } });
+        }
       } else {
         const errorData = await response.json();
         console.error('Error creating order:', errorData); // Log the error response
@@ -113,6 +120,15 @@ const ConfirmOrderStaff = () => {
       console.error("Error creating order:", error);
       toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
     }
+  };
+
+  const handleShowModal = (paymentMethod) => {
+    setSelectedPaymentMethod(paymentMethod);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
   return (
@@ -162,9 +178,27 @@ const ConfirmOrderStaff = () => {
             </div>
 
           </form>
-          <button className="btn btn-primary mt-3" onClick={handlePayment}>Thanh toán</button>
+          <button className="btn btn-primary mt-3" onClick={() => handleShowModal('qr')}>Thanh toán bằng QR</button>
+          <button className="btn btn-secondary mt-3" onClick={() => handleShowModal('cash')}>Thanh toán bằng tiền mặt</button>
         </div>
       </div>
+
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Xác nhận thanh toán</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Bạn có chắc chắn thanh toán bằng {selectedPaymentMethod === 'cash' ? 'tiền mặt' : 'QR'} không?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            No
+          </Button>
+          <Button variant="primary" onClick={handlePayment}>
+            Yes
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

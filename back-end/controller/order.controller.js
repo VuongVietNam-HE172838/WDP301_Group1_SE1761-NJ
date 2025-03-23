@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const createOrder = async (req, res) => {
     try {
-        const { items, order_type, total_price, user_info, delivery_method, delivery_time } = req.body;
+        const { items, order_type, total_price, user_info, delivery_method, delivery_time, payment_method } = req.body;
         const user = req.user;
 
         console.log('Creating order for user:', user);
@@ -26,7 +26,7 @@ const createOrder = async (req, res) => {
             })),
             delivery_method,
             delivery_time,
-            isPaid: false // Ensure isPaid is false
+            isPaid: payment_method === 'cash' // Set isPaid to true if payment method is cash
         });
 
         console.log('New bill:', newBill);
@@ -53,6 +53,31 @@ const createOrder = async (req, res) => {
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ message: 'Failed to create order', error });
+    }
+};
+
+const confirmPayment = async (req, res) => {
+    try {
+        const { orderId, payment_method } = req.body;
+
+        console.log('Confirming payment for order:', orderId, payment_method);
+
+        const order = await Order.findById(orderId).populate('bill');
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (payment_method !== 'cash' && payment_method !== 'qr') {
+            return res.status(400).json({ message: 'Invalid payment method' });
+        }
+
+        order.bill.isPaid = true;
+        await order.bill.save();
+
+        res.status(200).json({ message: `Payment confirmed by ${payment_method}`, order });
+    } catch (error) {
+        console.error('Error confirming payment:', error);
+        res.status(500).json({ message: 'Failed to confirm payment', error });
     }
 };
 
@@ -159,5 +184,6 @@ module.exports = {
     getStaffOrders,
     getOrderDetails,
     updateOrderStatus,
-    getOnlinePaidOrders // Export the new function
+    getOnlinePaidOrders,
+    confirmPayment // Export the new function
 };
