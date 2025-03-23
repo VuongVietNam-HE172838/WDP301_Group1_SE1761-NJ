@@ -4,6 +4,7 @@ import axios from 'axios';
 import Cart from './Cart';
 import CartIcon from './CartIcon';
 import CartStaff from './CartStaff';
+import { toast } from 'react-toastify';
 
 const StaffOrder = () => {
     const [categories, setCategories] = useState([]);
@@ -70,6 +71,7 @@ const StaffOrder = () => {
         } else {
             setCartItems([...cartItems, { dish, quantity: 1 }]);
         }
+        toast.success("Thêm vào giỏ hàng thành công!");
     };
 
     const removeFromCart = (dishId) => {
@@ -78,9 +80,14 @@ const StaffOrder = () => {
 
     const updateCartItemQuantity = (dishId, quantity) => {
         if (quantity <= 0) {
-            removeFromCart(dishId);
+            toast.error('Số lượng món phải lớn hơn 0');
         } else {
-            setCartItems(cartItems.map(item => item.dish._id === dishId ? { ...item, quantity } : item));
+            const dish = dishes.find(d => d._id === dishId);
+            if (quantity > dish.quantity) {
+                toast.error(`Số lượng món không được vượt quá ${dish.quantity}`);
+            } else {
+                setCartItems(cartItems.map(item => item.dish._id === dishId ? { ...item, quantity } : item));
+            }
         }
     };
 
@@ -206,6 +213,7 @@ const StaffOrder = () => {
                                                     style={{ height: '50px', width: '50px', objectFit: 'cover', borderRadius: '5px' }} // Small image
                                                 />
                                                 <Card.Title className="fw-bold mb-0 ms-3" style={{ fontSize: '1rem' }}>{dish.name}</Card.Title> {/* Adjust font size */}
+                                                <p className="mb-0 ms-3" style={{ fontSize: '0.8rem' }}>Còn lại: {dish.quantity}</p> {/* Display remaining quantity */}
                                             </div>
                                             <Button variant="danger" className="fw-bold" onClick={() => addToCart(dish)} style={{ fontSize: '0.9rem' }}>Thêm</Button> {/* Adjust font size */}
                                         </Card.Body>
