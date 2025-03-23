@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Button, Form, Modal } from "react-bootstrap";
-import { toast,ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 
 const ManageDish = () => {
     const [dishes, setDishes] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState("");
     const [newDish, setNewDish] = useState({
         name: "",
         price: "",
@@ -20,39 +21,36 @@ const ManageDish = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
+    
     useEffect(() => {
-        fetchDishes();
         fetchCategories();
     }, []);
 
-    const fetchDishes = async () => {
-        try {
-            const response = await axios.get("http://localhost:9999/menu/dishes");
-            const dishesWithCategoryName = await Promise.all(
-                response.data.map(async (dish) => {
-                    const categoryResponse = await axios.get(`http://localhost:9999/menu/category/${dish.category_id}`);
-                    return {
-                        ...dish,
-                        category_name: categoryResponse.data.name,
-                        price: dish.optional?.price || "",
-                        size: dish.optional?.size || "",
-                    };
-                })
-            );
-            setDishes(dishesWithCategoryName);
-        } catch (error) {
-            console.error("Error fetching dishes:", error);
-            toast.error("Lỗi khi tải danh sách món ăn!");
-        }
-    };
+    useEffect(() => {
+        fetchDishes(); // Gọi hàm này mỗi khi selectedCategory thay đổi
+    }, [selectedCategory]);
 
     const fetchCategories = async () => {
         try {
             const response = await axios.get("http://localhost:9999/menu/menu");
             setCategories(response.data);
+            if (response.data.length > 0) {
+                setSelectedCategory(response.data[0]._id); // Mặc định chọn danh mục đầu tiên
+            }
         } catch (error) {
             console.error("Error fetching categories:", error);
             toast.error("Lỗi khi tải danh mục!");
+        }
+    };
+
+    const fetchDishes = async () => {
+        if (!selectedCategory) return; // Không fetch nếu không có danh mục
+        try {
+            const response = await axios.get(`http://localhost:9999/menu/${selectedCategory}/dishes`);
+            setDishes(response.data);
+        } catch (error) {
+            console.error("Error fetching dishes:", error);
+            toast.error("Lỗi khi tải danh sách món ăn!");
         }
     };
 
@@ -136,7 +134,7 @@ const ManageDish = () => {
             }
         }
     };
-    
+
 
     // Sorting function
     const sortDishes = (key) => {
@@ -168,7 +166,22 @@ const ManageDish = () => {
     return (
         <div className="container">
             <h2 className="text-center my-3">Manage Dishes</h2>
-
+            {/* Category Selection */}
+            <Form.Group>
+                <Form.Label>Select Category</Form.Label>
+                <Form.Control
+                    as="select"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                   
+                    {categories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </Form.Control>
+            </Form.Group>
             <Button variant="primary" onClick={() => setShowAddModal(true)} className="mb-3">
                 Add Dish
             </Button>
@@ -344,7 +357,7 @@ const ManageDish = () => {
             {/* Table displaying dishes */}
             <Table striped bordered hover>
                 <thead>
-                    <tr>    
+                    <tr>
                         <th>Name</th>
                         <th onClick={() => sortDishes("price")}>Price</th>
                         <th>Size</th>
@@ -359,8 +372,8 @@ const ManageDish = () => {
                     {dishes.map((dish) => (
                         <tr key={dish._id}>
                             <td>{dish.name}</td>
-                            <td>{dish.price}</td>
-                            <td>{dish.size}</td>
+                            <td>{dish.optional?.price}</td>
+                            <td>{dish.optional?.size}</td>
                             <td>{dish.quantity}</td>
                             <td>{dish.description}</td>
                             <td>{dish.category_name}</td>
