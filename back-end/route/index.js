@@ -9,6 +9,7 @@ const blogRoute = require('./blog.route');
 const paymentRoute = require('./payments.route');
 const accountRoute = require('./account.route');
 const cartRoute = require('./cart.route');
+const feedbackRoute = require('./feedback.route');
 
 router.use('/authen', authenRoute);
 router.use('/menu', menuRoute);
@@ -18,5 +19,6 @@ router.use('/account', accountRoute);
 router.use('/payments', paymentRoute);
 router.use('/admin', adminRoute);
 router.use('/cart', cartRoute);
+router.use('/feedback', feedbackRoute);
 
 module.exports = router;

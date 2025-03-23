@@ -4,7 +4,8 @@ import { Row, Col, Card, Button, Modal, Image, Form } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import FeedbackModal from "./FeedbackModal";
+import ViewFeedbackModal from "./ViewFeedbackModal";
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -13,7 +14,11 @@ const OrderHistory = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [sortOrder, setSortOrder] = useState('desc');
-
+  const [isFeedbackModalVisible, setIsFeedbackModalVisible] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [rating, setRating] = useState(0);
+  const [isViewFeedbackModalVisible, setIsViewFeedbackModalVisible] = useState(false);
+  
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -95,7 +100,55 @@ const OrderHistory = () => {
         return {};
     }
   };
+  const handleFeedbackSubmit = async () => {
+    if (!selectedOrder || !selectedOrder._id || !selectedOrder.order_by) {
+      alert("Lỗi: Không có đơn hàng hợp lệ!");
+      return;
+    }
+  
+    if (!rating || feedbackText.trim() === "") {
+      alert("Vui lòng nhập đánh giá và nội dung feedback!");
+      return;
+    }
+  
+    try {
+      const token = localStorage.getItem('token');
+  
+      // Kiểm tra xem đơn hàng này đã có feedback chưa
+      const feedbackResponse = await axios.get(
+        `http://localhost:9999/api/feedback/order/${selectedOrder._id}`, 
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      console.log('Feedback response:', feedbackResponse.data);
 
+      if (feedbackResponse.data.length > 0) {
+        alert("Bạn đã gửi feedback cho đơn hàng này rồi!");
+        return;
+      }
+  
+      // Nếu chưa có feedback, tiến hành gửi feedback mới
+      await axios.post(`${process.env.REACT_APP_URL_API_BACKEND}/feedback`, {
+        order: selectedOrder._id,  
+        rating: rating,
+        comment: feedbackText.trim(),
+        feedback_by: selectedOrder.order_by  
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+  
+      setIsFeedbackModalVisible(false);
+      setFeedbackText('');
+      setRating(0);
+      alert('Gửi feedback thành công!');
+    } catch (error) {
+      console.error('Error submitting feedback:', error.response?.data || error.message);
+      alert(`Gửi feedback thất bại! Lỗi: ${error.response?.data?.message || "Không xác định"}`);
+    }
+  };
+  
+  
   return (
     <div className="container mt-4">
       <h2 className="text-center mb-4">Lịch sử đơn hàng</h2>
@@ -133,7 +186,32 @@ const OrderHistory = () => {
                   <>
                     <strong>Trạng thái:</strong><Card.Text style={getStatusStyle(order.status)}> {order.status}</Card.Text>
                     <Card.Text><strong>Tổng tiền:</strong> {order.bill.total_amount} đ</Card.Text>
-                    <Button variant="primary" onClick={() => showOrderDetails(order)}>Xem chi tiết</Button>
+                    <Button variant="primary" className="me-2" onClick={() => showOrderDetails(order)}>
+  Xem chi tiết
+</Button>
+
+<Button 
+  variant="success" 
+  className="me-2" 
+  onClick={() => {
+    setSelectedOrder(order);
+    setIsFeedbackModalVisible(true);
+  }}
+>
+  Feedback
+</Button>
+
+<Button 
+  variant="info" 
+  onClick={() => {
+      setSelectedOrder(order);
+      setIsViewFeedbackModalVisible(true);
+    }}
+>
+  Xem Feedback
+</Button>
+
+
                   </>
                 ) : (
                   <Card.Text>Thông tin hóa đơn không có sẵn</Card.Text>
@@ -143,6 +221,20 @@ const OrderHistory = () => {
           </Col>
         ))}
       </Row>
+      <FeedbackModal
+        show={isFeedbackModalVisible}
+        onHide={() => setIsFeedbackModalVisible(false)}
+        onSubmit={handleFeedbackSubmit}
+        feedbackText={feedbackText}
+        setFeedbackText={setFeedbackText}
+        rating={rating}
+        setRating={setRating}
+      />
+      <ViewFeedbackModal 
+  show={isViewFeedbackModalVisible} 
+  onHide={() => setIsViewFeedbackModalVisible(false)} 
+  orderId={selectedOrder?._id} 
+/>
       <Modal show={isModalVisible} onHide={handleCancel}>
         <Modal.Header closeButton>
           <Modal.Title>Chi tiết đơn hàng</Modal.Title>

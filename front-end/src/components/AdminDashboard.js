@@ -3,6 +3,8 @@ import { Link, Routes, Route } from 'react-router-dom';
 import ManageCategory from './ManageCategory';
 import ManageDish from './ManageDish';
 import ManageBlog from './ManageBlog';
+import Feedback from './Feedback';
+
 import '../AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -63,6 +65,15 @@ const AdminDashboard = () => {
               </li>
               <li className="nav-item">
                 <Link 
+                  className={`nav-link ${activeTab === "feedback" ? "active" : ""}`} 
+                  
+                  onClick={() => setActiveTab("feedback")}
+                >
+                  <i className='bx bxs-food'></i> Feedback
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link 
                   className={`nav-link ${activeTab === "reports" ? "active" : ""}`} 
                  
                   onClick={() => setActiveTab("reports")}
@@ -81,6 +92,7 @@ const AdminDashboard = () => {
           {/* {activeTab === "accounts" && <ManageAccount />} */}
           {/* {activeTab === "billing" && <ManageBill />}  */}
           {activeTab === "blog" && <ManageBlog />} 
+          {activeTab === "feedback" && <Feedback />} 
           {/* {activeTab === "reports" && <Managereports />}  */}
 
 
