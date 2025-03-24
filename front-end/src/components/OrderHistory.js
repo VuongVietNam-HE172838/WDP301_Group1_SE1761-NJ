@@ -190,26 +190,31 @@ const OrderHistory = () => {
   Xem chi tiết
 </Button>
 
-<Button 
-  variant="success" 
-  className="me-2" 
-  onClick={() => {
-    setSelectedOrder(order);
-    setIsFeedbackModalVisible(true);
-  }}
->
-  Feedback
-</Button>
+{order.status === "done" && (
+  <>
+    <Button 
+      variant="success" 
+      className="me-2" 
+      onClick={() => {
+        setSelectedOrder(order);
+        setIsFeedbackModalVisible(true);
+      }}
+    >
+      Feedback
+    </Button>
 
-<Button 
-  variant="info" 
-  onClick={() => {
-      setSelectedOrder(order);
-      setIsViewFeedbackModalVisible(true);
-    }}
->
-  Xem Feedback
-</Button>
+    <Button 
+      variant="info" 
+      onClick={() => {
+        setSelectedOrder(order);
+        setIsViewFeedbackModalVisible(true);
+      }}
+    >
+      Xem Feedback
+    </Button>
+  </>
+)}
+
 
 
                   </>
