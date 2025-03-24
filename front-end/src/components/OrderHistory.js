@@ -144,7 +144,7 @@ const OrderHistory = () => {
       alert('Gửi feedback thành công!');
     } catch (error) {
       console.error('Error submitting feedback:', error.response?.data || error.message);
-      alert(`Gửi feedback thất bại! Lỗi: ${error.response?.data?.message || "Không xác định"}`);
+      alert(`Gửi feedback thất bại! ${error.response?.data?.message || "Không xác định"}`);
     }
   };
   
