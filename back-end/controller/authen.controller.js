@@ -298,17 +298,16 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-
 exports.changePassword = async (req, res) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
     console.log(req.body);
 
-    // Kiểm tra mật khẩu mới có đủ mạnh không
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+    // Kiểm tra mật khẩu mới có ít nhất 8 ký tự, bao gồm cả chữ và số
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!passwordRegex.test(newPassword)) {
       return res.status(400).json({
-        message: "Mật khẩu mới phải có ít nhất 12 ký tự, bao gồm ít nhất một chữ cái thường, một chữ cái hoa, một số và một ký tự đặc biệt."
+        message: "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm cả chữ và số."
       });
     }
 

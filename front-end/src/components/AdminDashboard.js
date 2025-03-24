@@ -3,8 +3,12 @@ import { Link } from 'react-router-dom';
 import ManageCategory from './ManageCategory';
 import ManageDish from './ManageDish';
 import ManageBlog from './ManageBlog';
+
 import AdminStatistics from './AdminStatistics';
 import ManageAccounts from './ManageAccounts';
+
+import Feedback from './Feedback';
+
 import '../AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -22,6 +26,8 @@ const AdminDashboard = () => {
         return <AdminStatistics />;
       case "accounts":
         return <ManageAccounts />;
+      case "feedback":
+        return <Feedback />;
       default:
         return <AdminStatistics />;
     }
@@ -75,12 +81,25 @@ const AdminDashboard = () => {
                   className={`nav-link ${activeTab === "blog" ? "active" : ""}`}
                   onClick={() => setActiveTab("blog")}
                 >
+
                   <i className="bx bxs-news"></i> Quản lí Blog
+
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  className={`nav-link ${activeTab === "feedback" ? "active" : ""}`}
+                  onClick={() => setActiveTab("feedback")}
+                >
+
+                  <i className="bx bxs-news"></i> FeedBack
+
                 </Link>
               </li>
             </ul>
           </div>
         </nav>
+
 
         {/* Main content */}
         <main
@@ -88,6 +107,8 @@ const AdminDashboard = () => {
           style={{ paddingTop: '120px', paddingBottom: '40px' }}
         >
           {renderContent()}
+
+
         </main>
       </div>
     </div>

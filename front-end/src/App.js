@@ -28,8 +28,13 @@ import CartStaff from './components/CartStaff';
 import UserProfile from './components/UserProfile';
 import TransactionHistory from './components/TransactionHistory';
 import OrderHistory from './components/OrderHistory';
+
 import AdminStatistics from './components/AdminStatistics';
 import ManageAccounts from './components/ManageAccounts';
+
+import Feedback from './components/Feedback';
+
+
 const App = () => {
   return (
 
@@ -53,6 +58,7 @@ const App = () => {
             <Route path="manage-account" element={<ManageAccounts />} />
           </Route>
           <Route path="/admin/manage-blog" element={<ManageBlog />} />
+          <Route path="/admin/feedback" element={<Feedback />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/transaction-history" element={<TransactionHistory />} />
           <Route path="/order-history" element={<OrderHistory />} />
