@@ -18,7 +18,7 @@ const OrderHistory = () => {
   const [feedbackText, setFeedbackText] = useState('');
   const [rating, setRating] = useState(0);
   const [isViewFeedbackModalVisible, setIsViewFeedbackModalVisible] = useState(false);
-  
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -105,18 +105,18 @@ const OrderHistory = () => {
       alert("Lỗi: Không có đơn hàng hợp lệ!");
       return;
     }
-  
+
     if (!rating || feedbackText.trim() === "") {
       alert("Vui lòng nhập đánh giá và nội dung feedback!");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem('token');
-  
+
       // Kiểm tra xem đơn hàng này đã có feedback chưa
       const feedbackResponse = await axios.get(
-        `http://localhost:9999/api/feedback/order/${selectedOrder._id}`, 
+        `http://localhost:9999/api/feedback/order/${selectedOrder._id}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -127,17 +127,17 @@ const OrderHistory = () => {
         alert("Bạn đã gửi feedback cho đơn hàng này rồi!");
         return;
       }
-  
+
       // Nếu chưa có feedback, tiến hành gửi feedback mới
       await axios.post(`${process.env.REACT_APP_URL_API_BACKEND}/feedback`, {
-        order: selectedOrder._id,  
+        order: selectedOrder._id,
         rating: rating,
         comment: feedbackText.trim(),
-        feedback_by: selectedOrder.order_by  
+        feedback_by: selectedOrder.order_by
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-  
+
       setIsFeedbackModalVisible(false);
       setFeedbackText('');
       setRating(0);
@@ -147,85 +147,91 @@ const OrderHistory = () => {
       alert(`Gửi feedback thất bại! ${error.response?.data?.message || "Không xác định"}`);
     }
   };
-  
-  
+
+
   return (
     <div className="container mt-4">
       <h2 className="text-center mb-4">Lịch sử đơn hàng</h2>
-      <Form.Group controlId="filterDate">
-        <Form.Label><strong>Chọn khoảng thời gian:</strong></Form.Label>
-        <DatePicker
-          selected={startDate}
-          onChange={handleDateChange}
-          startDate={startDate}
-          endDate={endDate}
-          selectsRange
-          maxDate={new Date()}
-          dateFormat="dd/MM/yyyy"
-          isClearable
-          className="form-control"
-          style={{ width: '300px' }} // Extend the width of the date picker
-        />
-      </Form.Group>
-      <Form.Group controlId="sortOrder" className="mt-3">
-        <Form.Label><strong>Sắp xếp theo thời gian:</strong></Form.Label>
-        <Form.Control as="select" value={sortOrder} onChange={handleSortChange} style={{ width: '150px' }}>
-          <option value="desc">Mới đến cũ</option>
-          <option value="asc">Cũ đến mới</option>
-        </Form.Control>
-      </Form.Group>
-      <Row className="mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <Form.Group controlId="filterDate" className="me-3">
+          <Form.Label><strong>Chọn khoảng thời gian:</strong></Form.Label>
+          <DatePicker
+            selected={startDate}
+            onChange={handleDateChange}
+            startDate={startDate}
+            endDate={endDate}
+            selectsRange
+            maxDate={new Date()}
+            dateFormat="dd/MM/yyyy"
+            isClearable
+            className="form-control"
+          />
+        </Form.Group>
+        <Form.Group controlId="sortOrder">
+          <Form.Label><strong>Sắp xếp theo thời gian:</strong></Form.Label>
+          <Form.Control as="select" value={sortOrder} onChange={handleSortChange}>
+            <option value="desc">Mới đến cũ</option>
+            <option value="asc">Cũ đến mới</option>
+          </Form.Control>
+        </Form.Group>
+      </div>
+      <div className="order-history-list">
         {filteredOrders.map(order => (
-          <Col md={6} key={order._id} className="mb-3">
-            <Card>
-              <Card.Header>
-                <strong>Ngày đặt hàng:</strong> {new Date(order.bill.created_at).toLocaleString()} {getStatusIcon(order.status)}
-              </Card.Header>
-              <Card.Body>
-                {order.bill ? (
-                  <>
-                    <strong>Trạng thái:</strong><Card.Text style={getStatusStyle(order.status)}> {order.status}</Card.Text>
-                    <Card.Text><strong>Tổng tiền:</strong> {order.bill.total_amount} đ</Card.Text>
-                    <Button variant="primary" className="me-2" onClick={() => showOrderDetails(order)}>
-  Xem chi tiết
-</Button>
+          <div key={order._id} className="order-card border rounded mb-4 p-3 shadow-sm">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5><strong>Ngày đặt hàng:</strong> {new Date(order.bill.created_at).toLocaleString()}</h5>
+                <p><strong>Trạng thái:</strong> <span style={getStatusStyle(order.status)}>{order.status}</span></p>
+              </div>
+              <div>
+                <p><strong>Tổng tiền:</strong> {order.bill.total_amount} đ</p>
+              </div>
+            </div>
+            <div className="order-items mb-3">
+              <h6><strong>Chi tiết món:</strong></h6>
+              <ul className="list-unstyled">
+                {order.bill.items.map(item => (
+                  <li key={item.item_id} className="d-flex align-items-center mb-2">
+                    <Image src={item.item_id.img} thumbnail style={{ width: '50px', marginRight: '10px' }} />
+                    <div>
+                      <p className="mb-0"><strong>{item.item_id.name}</strong></p>
+                      <p className="mb-0">{item.quantity} x {item.price} đ</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="d-flex justify-content-end">
+              <Button variant="primary" className="me-2" onClick={() => showOrderDetails(order)}>Xem chi tiết</Button>
+              {order.status === "done" && (
+                <>
+                  <Button
+                    variant="success"
+                    className="me-2"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setIsFeedbackModalVisible(true);
+                    }}
+                  >
+                    Feedback
+                  </Button>
 
-{order.status === "done" && (
-  <>
-    <Button 
-      variant="success" 
-      className="me-2" 
-      onClick={() => {
-        setSelectedOrder(order);
-        setIsFeedbackModalVisible(true);
-      }}
-    >
-      Feedback
-    </Button>
+                  <Button
+                    variant="info"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setIsViewFeedbackModalVisible(true);
+                    }}
+                  >
+                    Xem Feedback
+                  </Button>
+                </>
+              )}
 
-    <Button 
-      variant="info" 
-      onClick={() => {
-        setSelectedOrder(order);
-        setIsViewFeedbackModalVisible(true);
-      }}
-    >
-      Xem Feedback
-    </Button>
-  </>
-)}
-
-
-
-                  </>
-                ) : (
-                  <Card.Text>Thông tin hóa đơn không có sẵn</Card.Text>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
+            </div>
+          </div>
         ))}
-      </Row>
+      </div>
       <FeedbackModal
         show={isFeedbackModalVisible}
         onHide={() => setIsFeedbackModalVisible(false)}
@@ -235,11 +241,11 @@ const OrderHistory = () => {
         rating={rating}
         setRating={setRating}
       />
-      <ViewFeedbackModal 
-  show={isViewFeedbackModalVisible} 
-  onHide={() => setIsViewFeedbackModalVisible(false)} 
-  orderId={selectedOrder?._id} 
-/>
+      <ViewFeedbackModal
+        show={isViewFeedbackModalVisible}
+        onHide={() => setIsViewFeedbackModalVisible(false)}
+        orderId={selectedOrder?._id}
+      />
       <Modal show={isModalVisible} onHide={handleCancel}>
         <Modal.Header closeButton>
           <Modal.Title>Chi tiết đơn hàng</Modal.Title>
@@ -247,15 +253,15 @@ const OrderHistory = () => {
         <Modal.Body>
           {selectedOrder && selectedOrder.bill && (
             <div>
-              <h3>Ngày đặt hàng: {new Date(selectedOrder.bill.created_at).toLocaleString()}</h3>
+              <h4>Ngày đặt hàng: {new Date(selectedOrder.bill.created_at).toLocaleString()}</h4>
               <p><strong>Trạng thái:</strong> <span style={getStatusStyle(selectedOrder.status)}>{selectedOrder.status}</span></p>
               <p><strong>Loại đơn hàng:</strong> {selectedOrder.order_type}</p>
-              <h4>Chi tiết hóa đơn</h4>
+              <h5>Chi tiết hóa đơn</h5>
               <p><strong>Tên khách hàng:</strong> {selectedOrder.bill.customer_name}</p>
               <p><strong>Số điện thoại:</strong> {selectedOrder.bill.customer_phone}</p>
               <p><strong>Địa chỉ:</strong> {selectedOrder.bill.customer_address}</p>
               <p><strong>Tổng tiền:</strong> {selectedOrder.bill.total_amount} đ</p>
-              <h4>Chi tiết món</h4>
+              <h5>Chi tiết món</h5>
               <ul>
                 {selectedOrder.bill.items.map(item => (
                   <li key={item.item_id}>
