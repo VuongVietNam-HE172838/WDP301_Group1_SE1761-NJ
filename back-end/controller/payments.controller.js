@@ -37,7 +37,6 @@ exports.callBackPayment = async (req, res) => {
       return res.status(404).json({ message: 'Cart not found' });
     }
     const cartItem = await CartItem.find({ cart_id: cart._id });
-    console.log(cartItem);
     // Update the quantity of each dish in the bill and remove items from the cart
     for (const item of bill.items) {
       const dish = await Dish.findById(item.item_id);

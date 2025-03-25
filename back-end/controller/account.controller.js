@@ -62,19 +62,15 @@ const updateUserInformation = async (req, res) => {
 const getUserInformation = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log(`User ID from token: ${userId}`); // Log the userId
 
     const userInfo = await AccountDetail.findOne({ account_id: userId }).populate('account_id');
-    console.log('User info:', userInfo); // Log the userInfo
 
     if (!userInfo) {
-      console.log('User not found');
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.json(userInfo);
   } catch (error) {
-    console.error('Error fetching user information:', error.message); // Log the error
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -82,7 +78,6 @@ const getUserInformation = async (req, res) => {
 const getUserOrderHistory1 = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log(`User ID from token: ${userId}`); // Log the userId
 
     const userOrders = await Order.find({ order_by: userId })
     .populate({
@@ -97,10 +92,8 @@ const getUserOrderHistory1 = async (req, res) => {
       model: 'AccountDetail'
     });
 
-  console.log('User orders:', userOrders); // Log the userOrders
 
   if (!userOrders || userOrders.length === 0) {
-    console.log('No orders found');
     return [];
   }
 
@@ -125,7 +118,6 @@ const getUserOrderHistory1 = async (req, res) => {
 // Hàm lấy lịch sử đơn hàng của người dùng
 const getUserOrderHistory = async (userId) => {
   try {
-    console.log(`User ID: ${userId}`); // Log the userId
 
     const userOrders = await Order.find({ order_by: userId })
       .populate({
@@ -135,10 +127,8 @@ const getUserOrderHistory = async (userId) => {
           model: 'Dish'
         }
       });
-    console.log('User orders:', userOrders); // Log the userOrders
 
     if (!userOrders || userOrders.length === 0) {
-      console.log('No orders found');
       throw new Error('No orders found');
     }
 

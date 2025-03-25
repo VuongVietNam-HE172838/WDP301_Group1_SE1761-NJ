@@ -11,7 +11,6 @@ const createDatabase = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect("mongodb://localhost:27017/wdp");
-    console.log('MongoDB connected');
 
     // Create collections
     await Account.createCollection();
@@ -55,7 +54,6 @@ const createDatabase = async () => {
     });
     await adminAccountDetail.save();
 
-    console.log('Collections created, roles, admin account, and admin account detail inserted successfully');
     mongoose.connection.close();
   } catch (err) {
     console.error('Error creating collections:', err.message);

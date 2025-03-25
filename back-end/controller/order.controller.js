@@ -10,8 +10,6 @@ const createOrder = async (req, res) => {
         const { items, order_type, total_price, user_info, delivery_method, delivery_time, payment_method } = req.body;
         const user = req.user;
 
-        console.log('Creating order for user:', user);
-
         // Create a new bill
         const newBill = new Bill({
             user_id: user._id,
@@ -29,11 +27,7 @@ const createOrder = async (req, res) => {
             isPaid: payment_method === 'cash' // Set isPaid to true if payment method is cash
         });
 
-        console.log('New bill:', newBill);
-
         await newBill.save();
-
-        console.log('Bill saved successfully');
 
         // Create a new order
         const newOrder = new Order({
@@ -43,11 +37,7 @@ const createOrder = async (req, res) => {
             status: 'on going' // Set order status to on going
         });
 
-        console.log('New order:', newOrder);
-
         await newOrder.save();
-
-        console.log('Order saved successfully');
 
         res.status(201).json({ message: 'Order created successfully', order: newOrder });
     } catch (error) {
@@ -60,7 +50,6 @@ const confirmPayment = async (req, res) => {
     try {
         const { orderId, payment_method } = req.body;
 
-        console.log('Confirming payment for order:', orderId, payment_method);
 
         const order = await Order.findById(orderId).populate('bill');
         if (!order) {
@@ -76,7 +65,6 @@ const confirmPayment = async (req, res) => {
 
         res.status(200).json({ message: `Payment confirmed by ${payment_method}`, order });
     } catch (error) {
-        console.error('Error confirming payment:', error);
         res.status(500).json({ message: 'Failed to confirm payment', error });
     }
 };
@@ -99,8 +87,6 @@ const getStaffOrders = async (req, res) => {
         //         order.bill.customer_name = accountDetail.full_name;
         //     }
         // }
-
-        console.log('Staff orders with populated data:', orders);
 
         res.status(200).json({ orders });
     } catch (error) {

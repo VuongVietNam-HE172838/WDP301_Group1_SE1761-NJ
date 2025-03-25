@@ -80,7 +80,6 @@ const ConfirmOrderStaff = () => {
       return;
     }
 
-    console.log('Token:', token); // Log the token
 
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/order/createOrder`, {
@@ -100,11 +99,9 @@ const ConfirmOrderStaff = () => {
         }), // Set order type to 'counter'
       });
 
-      console.log('Response status:', response.status); // Log the response status
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Order created:', data); // Log the response data
         toast.success("Đơn hàng đã được tạo thành công!");
         if (selectedPaymentMethod === 'cash') {
           navigate("/staff-order");

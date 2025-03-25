@@ -17,7 +17,6 @@ const getAccounts = async (req, res) => {
     if (role) {
       // Filter by role name (populate role_id and match by name)
       const roleDoc = await Role.findOne({ name: role });
-      console.log(roleDoc);
       if (roleDoc) {
         query.role_id = roleDoc._id;
       } else {
@@ -38,7 +37,6 @@ const getAccounts = async (req, res) => {
       .populate('role_id', 'name') // Populate role name
       .skip(skip)
       .limit(limit);
-    console.log(accounts);
     const totalAccounts = await Account.countDocuments(query);
 
     res.json({

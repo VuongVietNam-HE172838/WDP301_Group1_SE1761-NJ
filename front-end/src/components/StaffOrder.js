@@ -102,7 +102,6 @@ const StaffOrder = () => {
                 }
             });
             setOrders(orders.map(order => order._id === orderId ? { ...order, status: response.data.order.status } : order));
-            console.log("Updated order status:", response.data.order);
         } catch (error) {
             console.error("Error updating order status:", error);
         }

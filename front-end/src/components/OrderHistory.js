@@ -121,7 +121,6 @@ const OrderHistory = () => {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      console.log('Feedback response:', feedbackResponse.data);
 
       if (feedbackResponse.data.length > 0) {
         alert("Bạn đã gửi feedback cho đơn hàng này rồi!");

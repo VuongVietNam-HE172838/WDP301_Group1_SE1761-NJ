@@ -23,7 +23,6 @@ exports.login = async (req, res) => {
 
   try {
     const account = await Account.findOne({ user_name });
-    console.log(account);
     if (!account) {
       return res
         .status(404)
@@ -278,7 +277,6 @@ exports.verifyEmail = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
   
 
   try {
@@ -301,7 +299,6 @@ exports.resetPassword = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
-    console.log(req.body);
 
     // Kiểm tra mật khẩu mới có ít nhất 8 ký tự, bao gồm cả chữ và số
     const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/;

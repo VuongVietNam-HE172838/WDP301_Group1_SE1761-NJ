@@ -24,11 +24,9 @@ const db = {
 db.connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URL;
-    console.log(`Connecting to MongoDB: ${mongoURI}`);
     
     await mongoose.connect(mongoURI); // Không cần useNewUrlParser, useUnifiedTopology
     
-    console.log(`Successfully connected to MongoDB: ${process.env.DB_NAME}`);
   } catch (err) {
     console.error('Error connecting to MongoDB:', err.message);
     process.exit(1);
