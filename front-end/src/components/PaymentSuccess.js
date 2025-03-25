@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 const SuccessPayment = () => {
   useEffect(() => {
     const time = setTimeout(() => {
-      window.location.href = "/"; // Redirect về trang chủ sau 2s
+      window.location.href = "/order-history"; // Redirect về trang chủ sau 2s
     }, 4000);
     return () => clearTimeout(time);
   });

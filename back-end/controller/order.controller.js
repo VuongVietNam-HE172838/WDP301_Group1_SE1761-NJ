@@ -164,12 +164,10 @@ const getOnlinePaidOrders = async (req, res) => {
                     { path: 'user_id', model: 'Account' },
                     { path: 'items.item_id', model: 'Dish' }
                 ]
-            });
+            }).sort({ updated_at: -1 }); // Sort by updated_at in descending order;
 
         // Filter out orders where the bill is null (because isPaid was false)
         const filteredOrders = orders.filter(order => order.bill !== null);
-
-        console.log('Online paid orders with populated data:', filteredOrders);
 
         res.status(200).json({ orders: filteredOrders });
     } catch (error) {

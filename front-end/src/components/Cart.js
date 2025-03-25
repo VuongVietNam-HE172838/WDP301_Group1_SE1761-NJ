@@ -17,6 +17,8 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
 
     const totalPrice = selectedItems.reduce((total, item) => item.selected ? total + (item.dish.optional?.price || 0) * item.quantity : total, 0);
 
+    const isOrderButtonEnabled = selectedItems.some(item => item.selected); // Kiểm tra nếu có ít nhất một mục được chọn
+
     const handleOrder = () => {
         const formattedCartItems = selectedItems
             .filter(item => item.selected && item.dish.quantity > 0)
@@ -52,9 +54,6 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const handleQuantityInputChange = (dishId, value, maxQuantity) => {
         const sanitizedValue = value.replace(/[^0-9]/g, ""); // Loại bỏ ký tự không phải số
         const quantity = sanitizedValue === "" ? 0 : parseInt(sanitizedValue, 10); // Chuyển thành số hoặc 0 nếu rỗng
-
-        console.log('Giá trị nhập vào:', sanitizedValue);
-        console.log('Số đã parse:', quantity);
 
         // Cập nhật giá trị hiển thị ngay lập tức
         setInputValues(prev => ({ ...prev, [dishId]: sanitizedValue }));
@@ -135,7 +134,13 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                     ))}
                     <div className="text-end">
                         <h4 className="fw-bold">Tổng giá: {totalPrice.toLocaleString()} đ</h4>
-                        <Button variant="success" onClick={handleOrder}>Đặt hàng</Button>
+                        <Button 
+                            variant="success" 
+                            onClick={handleOrder} 
+                            disabled={!isOrderButtonEnabled} // Vô hiệu hóa nút nếu không có mục nào được chọn
+                        >
+                            Đặt hàng
+                        </Button>
                     </div>
                 </>
             ) : (
