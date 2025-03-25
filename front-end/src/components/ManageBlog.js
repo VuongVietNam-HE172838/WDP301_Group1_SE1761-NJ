@@ -118,7 +118,17 @@ const ManageBlog = () => {
         });
     }
   };
-
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditBlog(null); // Reset lại form
+};
+const handleImageChange2 = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setSelectedImage(file);
+    setEditBlog({ ...editBlog, img: URL.createObjectURL(file) }); // Hiển thị ảnh tạm thời
+  }
+};
   return (
     <div className="container">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -168,6 +178,82 @@ const ManageBlog = () => {
         </tbody>
       </Table>
 
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Edit Blog</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {editBlog && (
+          <Form>
+            <Form.Group>
+              <Form.Label>Title</Form.Label>
+              <Form.Control
+                type="text"
+                value={editBlog.title}
+                onChange={(e) => setEditBlog({ ...editBlog, title: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Content</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={editBlog.content}
+                onChange={(e) => setEditBlog({ ...editBlog, content: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Current Image</Form.Label>
+              <div className="mt-3 text-center">
+                <img
+                  src={editBlog.img}
+                  alt="Current"
+                  style={{
+                    width: "150px",
+                    height: "150px",
+                    borderRadius: "8px",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Upload New Image</Form.Label>
+              <Form.Control type="file" accept="image/*" onChange={handleImageChange2} />
+              {selectedImage && (
+                <div className="mt-3 text-center" style={{ marginTop: "10px" }}>
+                  <p>Preview:</p>
+                  <img
+                    src={URL.createObjectURL(selectedImage)}
+                    alt="Preview"
+                    style={{
+                        width: "150px",
+                        height: "150px",
+                        borderRadius: "8px",
+                        objectFit: "cover",
+                      }}
+                  />
+                </div>
+              )}
+            </Form.Group>
+          </Form>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button
+          variant="secondary"
+          onClick={handleCloseEditModal}
+        >
+          Close
+        </Button>
+        <Button
+          variant="primary"
+          onClick={() => handleEditBlog(selectedImage)}
+        >
+          Save
+        </Button>
+      </Modal.Footer>
+    </Modal>
       {/* Modal thêm blog */}
       <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered>
         <Modal.Header closeButton>

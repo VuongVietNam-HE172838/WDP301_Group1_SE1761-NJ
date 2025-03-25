@@ -19,12 +19,13 @@ module.exports.upload = upload;
 // Lấy danh sách tất cả blog
 exports.getAllBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find();
+    const blogs = await Blog.find().sort({ created_at: -1 }); // Sắp xếp theo ngày mới nhất
     res.status(200).json(blogs);
   } catch (error) {
     res.status(500).json({ message: "Lỗi server", error });
   }
 };
+
 
 
 // Tạo blog mới

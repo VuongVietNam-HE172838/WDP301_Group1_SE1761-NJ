@@ -53,10 +53,39 @@ export default function ModalUpdateInfo({ show, handleClose, userInfo, onUpdate 
       return;
     }
   
+    // Kiểm tra các trường không được để trống
+    const requiredFields = ["full_name", "phone_number", "birth_of_date", "id_number", "gender", "address"];
+    for (const field of requiredFields) {
+      if (!formData[field]?.trim()) {
+        toast.error(`Thông tin không được để trống`);
+        return;
+      }
+    }
+  
+    // Kiểm tra độ dài của full_name
+    if (formData.full_name.length < 4) {
+      toast.error("Họ và tên phải có ít nhất 4 ký tự");
+      return;
+    }
+  
+    // Kiểm tra số điện thoại (10 chữ số)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(formData.phone_number)) {
+      toast.error("Số điện thoại phải có đúng 10 chữ số");
+      return;
+    }
+  
+    // Kiểm tra số CMND/CCCD (12 chữ số)
+    const idNumberRegex = /^[0-9]{12}$/;
+    if (!idNumberRegex.test(formData.id_number)) {
+      toast.error("Số CMND/CCCD phải có đúng 12 chữ số");
+      return;
+    }
+  
     try {
       setLoading(true);
       const formDataToSend = new FormData();
-      
+  
       Object.entries(formData).forEach(([key, value]) => {
         if (value) {
           formDataToSend.append(key, value);
@@ -89,6 +118,8 @@ export default function ModalUpdateInfo({ show, handleClose, userInfo, onUpdate 
       toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
+  
+  
 
   const renderFormGroup = (label, key, type = "text") => {
     if (key === "gender") {

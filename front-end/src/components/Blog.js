@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 6; // Số bài viết mỗi trang
 
   useEffect(() => {
     fetch("http://localhost:9999/api/blogs")
@@ -10,6 +12,20 @@ const Blog = () => {
       .then((data) => setBlogs(data))
       .catch((error) => console.error("Error fetching blogs:", error));
   }, []);
+
+  // Tính toán vị trí bắt đầu và kết thúc của bài viết trên trang hiện tại
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
+
+  // Xử lý chuyển trang
+  const totalPages = Math.ceil(blogs.length / blogsPerPage);
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
 
   return (
     <div className="container py-5">
@@ -38,7 +54,7 @@ const Blog = () => {
           <h2 className="fw-bold">Danh sách bài viết</h2>
         </div>
         <div className="row g-4">
-          {blogs.map((blog) => (
+          {currentBlogs.map((blog) => (
             <div key={blog._id} className="col-md-4">
               <div className="card h-100 shadow-sm">
                 <Link to={`/blogs/${blog._id}`}>
@@ -54,6 +70,25 @@ const Blog = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Phân trang */}
+        <div className="d-flex justify-content-center mt-4">
+          <button 
+            onClick={handlePrevPage} 
+            className="btn btn-outline-primary mx-2"
+            disabled={currentPage === 1}
+          >
+            ← Trước
+          </button>
+          <span className="align-self-center">Trang {currentPage} / {totalPages}</span>
+          <button 
+            onClick={handleNextPage} 
+            className="btn btn-outline-primary mx-2"
+            disabled={currentPage === totalPages}
+          >
+            Sau →
+          </button>
         </div>
       </section>
     </div>
