@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Card, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const navigate = useNavigate();
@@ -37,9 +36,9 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
 
     const handleUpdateQuantity = (dishId, quantity, maxQuantity) => {
         if (quantity <= 0) {
-            toast.error('Số lượng món phải lớn hơn 0');
+            removeFromCart(dishId);
         } else if (quantity > maxQuantity) {
-            toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
+            updateCartItemQuantity(dishId, maxQuantity); // Set to max quantity if exceeded
         } else {
             updateCartItemQuantity(dishId, quantity);
         }
@@ -48,9 +47,9 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const handleQuantityInputChange = (dishId, value, maxQuantity) => {
         const quantity = parseInt(value, 10);
         if (isNaN(quantity) || quantity <= 0) {
-            toast.error('Số lượng món phải lớn hơn 0');
+            updateCartItemQuantity(dishId, 1); // Set to 1 if invalid or less than 1
         } else if (quantity > maxQuantity) {
-            toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
+            updateCartItemQuantity(dishId, maxQuantity); // Set to max quantity if exceeded
         } else {
             updateCartItemQuantity(dishId, quantity);
         }
@@ -102,19 +101,9 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                             <Form.Control
                                                 type="number"
                                                 value={item.quantity}
-                                                onChange={(e) => setSelectedItems(prevItems => {
-                                                    const newItems = [...prevItems];
-                                                    newItems[index].quantity = e.target.value;
-                                                    return newItems;
-                                                })}
-                                                onBlur={(e) => handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity)}
-                                                onKeyPress={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity);
-                                                    }
-                                                }}
+                                                onChange={(e) => handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity)}
                                                 className="mx-2"
-                                                style={{ width: '100px', textAlign: 'center' }}
+                                                style={{ width: '60px', textAlign: 'center' }}
                                             />
                                             <Button 
                                                 variant="secondary" 
