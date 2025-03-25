@@ -100,13 +100,14 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                             {item.dish.optional?.price ? `${item.dish.optional.price.toLocaleString()} đ` : 'Chưa có giá'}
                                         </Card.Text>
                                         <Card.Text className="text-muted">
-                                            <strong>Số lượng còn lại:</strong> {item.dish.quantity}
+                                            <strong>Số lượng còn lại:</strong> {item.dish.quantity > 0 ? item.dish.quantity : <span className="text-danger">Hết hàng</span>}
                                         </Card.Text>
                                         <div className="d-flex justify-content-end align-items-center mt-2">
                                             <Button 
                                                 variant="secondary" 
                                                 size="sm" 
                                                 onClick={() => handleUpdateQuantity(item.dish._id, item.quantity - 1, item.dish.quantity)}
+                                                disabled={item.quantity <= 0} // Vô hiệu hóa nếu hết hàng
                                             >
                                                 -
                                             </Button>
@@ -116,12 +117,13 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                                 onChange={(e) => handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity)}
                                                 className="mx-2"
                                                 style={{ width: '60px', textAlign: 'center' }}
+                                                disabled={item.dish.quantity <= 0} // Vô hiệu hóa nếu hết hàng
                                             />
                                             <Button 
                                                 variant="secondary" 
                                                 size="sm" 
                                                 onClick={() => handleUpdateQuantity(item.dish._id, item.quantity + 1, item.dish.quantity)}
-                                                disabled={item.quantity >= item.dish.quantity}
+                                                disabled={item.quantity >= item.dish.quantity || item.dish.quantity <= 0} // Vô hiệu hóa nếu hết hàng
                                             >
                                                 +
                                             </Button>
