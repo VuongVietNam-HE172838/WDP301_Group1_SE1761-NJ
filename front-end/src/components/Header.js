@@ -127,6 +127,13 @@ function Header() {
                         </Link>
                       </li>
                     )}
+                    {accountDetail?.role === "ADMIN" && (
+                      <li>
+                        <Link className="dropdown-item" to="/admin">
+                          ADMIN Dashboard
+                        </Link>
+                      </li>
+                    )}
                     <li>
                       <hr className="dropdown-divider" />
                     </li>

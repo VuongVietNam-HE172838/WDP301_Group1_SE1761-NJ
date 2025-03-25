@@ -15,6 +15,9 @@ const ManageAccounts = () => {
     role: '',
     isVerified: '',
   }); // Filters for the API
+  const [pageNo, setPageNo] = useState(1); // Current page number
+  const [pageSize, setPageSize] = useState(10); // Number of items per page
+  const [totalPages, setTotalPages] = useState(1); // Total number of pages
 
   const fetchAccounts = async () => {
     try {
@@ -35,12 +38,15 @@ const ManageAccounts = () => {
       if (filters.user_name) params.append('user_name', filters.user_name);
       if (filters.role) params.append('role', filters.role);
       if (filters.isVerified) params.append('isVerified', filters.isVerified);
+      params.append('pageNo', pageNo);
+      params.append('pageSize', pageSize);
 
       const response = await axios.get(
         `${process.env.REACT_APP_URL_API_BACKEND}/admin/accounts?${params.toString()}`,
         config
       );
       setAccounts(response.data.accounts || []); // Ensure accounts is an array
+      setTotalPages(response.data.totalPages || 1); // Set total pages from response
     } catch (error) {
       console.error('Error fetching accounts:', error);
     }
@@ -99,11 +105,17 @@ const ManageAccounts = () => {
   useEffect(() => {
     fetchAccounts();
     fetchAccountStatistics();
-  }, [timeRange, filters]); // Refetch when filters or time range changes
+  }, [timeRange, filters, pageNo, pageSize]); // Refetch when filters, time range, pageNo, or pageSize changes
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters({ ...filters, [name]: value });
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPageNo(newPage);
+    }
   };
 
   // Prepare chart data
@@ -229,6 +241,24 @@ const ManageAccounts = () => {
             )}
           </tbody>
         </table>
+        {/* Pagination Controls */}
+        <div className="d-flex justify-content-between align-items-center">
+          <button
+            className="btn btn-secondary"
+            onClick={() => handlePageChange(pageNo - 1)}
+            disabled={pageNo === 1}
+          >
+            Trang trước
+          </button>
+          <span>Trang {pageNo} / {totalPages}</span>
+          <button
+            className="btn btn-secondary"
+            onClick={() => handlePageChange(pageNo + 1)}
+            disabled={pageNo === totalPages}
+          >
+            Trang sau
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -5,8 +5,8 @@ const Bill = require('../models/bill');
 // Get paginated list of accounts
 const getAccounts = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.pageNo) || 1;
+    const limit = parseInt(req.query.pageSize) || 10;
     const skip = (page - 1) * limit;
 
     // Extract filters from query parameters
@@ -158,6 +158,7 @@ const getOrderHistory = async (req, res) => {
           select: 'name category_id description price img', // Select specific fields from the dish
         },
       })
+      .sort({ updated_at: -1 }) // Sort by updated_at in descending order
       .populate('order_by')
       .skip(skip)
       .limit(limit);
