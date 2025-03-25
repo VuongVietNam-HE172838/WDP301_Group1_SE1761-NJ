@@ -17,6 +17,8 @@ const ConfirmOrder = () => {
   const [originalUserInfo, setOriginalUserInfo] = useState(null); // Store original user info for comparison
   const [deliveryMethod, setDeliveryMethod] = useState("Tự đến nhận hàng");
   const [showModal, setShowModal] = useState(false);
+  const [showConfirmInfoModal, setShowConfirmInfoModal] = useState(false); // New state for confirmation modal
+  const [errors, setErrors] = useState({ address: "", phone_number: "" }); // State for validation errors
 
   // Set initial delivery time to 16 minutes from now
   const initialDeliveryTime = new Date(new Date().getTime() + 16 * 60000);
@@ -101,7 +103,32 @@ const ConfirmOrder = () => {
     }
   };
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { address: "", phone_number: "" };
+
+    if (!userInfo.address.trim()) {
+      newErrors.address = "Địa chỉ không được để trống.";
+      isValid = false;
+    }
+
+    if (!userInfo.phone_number.trim()) {
+      newErrors.phone_number = "Số điện thoại không được để trống.";
+      isValid = false;
+    } else if (!/^\d{9}$/.test(userInfo.phone_number)) {
+      newErrors.phone_number = "Số điện thoại phải là 9 chữ số.";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handlePayment = async () => {
+    if (!validateForm()) {
+      return; // Stop if validation fails
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Bạn cần đăng nhập để thực hiện chức năng này!");
@@ -114,7 +141,7 @@ const ConfirmOrder = () => {
     ) {
       setShowModal(true); // Show the modal if user info has changed
     } else {
-      await proceedWithPayment(); // Proceed with payment directly
+      setShowConfirmInfoModal(true); // Show confirmation modal
     }
   };
 
@@ -161,6 +188,15 @@ const ConfirmOrder = () => {
     await proceedWithPayment(); // Skip updating and proceed with payment
   };
 
+  const handleConfirmInfoModalConfirm = async () => {
+    setShowConfirmInfoModal(false);
+    await proceedWithPayment(); // Proceed with payment after confirmation
+  };
+
+  const handleConfirmInfoModalCancel = () => {
+    setShowConfirmInfoModal(false);
+  };
+
   return (
     <div className="container mt-5" style={{ paddingTop: "70px" }}>
       <ToastContainer />
@@ -204,11 +240,26 @@ const ConfirmOrder = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Số điện thoại</label>
-              <input type="text" className="form-control" value={userInfo.phone_number} onChange={(e) => setUserInfo({ ...userInfo, phone_number: e.target.value })} />
+              <div className="input-group">
+                <span className="input-group-text">(+84)</span>
+                <input
+                  type="text"
+                  className={`form-control ${errors.phone_number ? "is-invalid" : ""}`}
+                  value={userInfo.phone_number}
+                  onChange={(e) => setUserInfo({ ...userInfo, phone_number: e.target.value })}
+                />
+                {errors.phone_number && <div className="invalid-feedback">{errors.phone_number}</div>}
+              </div>
             </div>
             <div className="mb-3">
               <label className="form-label">Địa chỉ</label>
-              <input type="text" className="form-control" value={userInfo.address} onChange={(e) => setUserInfo({ ...userInfo, address: e.target.value })} />
+              <input
+                type="text"
+                className={`form-control ${errors.address ? "is-invalid" : ""}`}
+                value={userInfo.address}
+                onChange={(e) => setUserInfo({ ...userInfo, address: e.target.value })}
+              />
+              {errors.address && <div className="invalid-feedback">{errors.address}</div>}
             </div>
             <div className="mb-3">
               <label className="form-label">Phương thức nhận hàng</label>
@@ -235,6 +286,7 @@ const ConfirmOrder = () => {
             </div>
           </form>
           <button className="btn btn-primary mt-3" onClick={handlePayment}>Thanh toán</button>
+          <button className="btn btn-secondary mt-3 ms-2" onClick={() => navigate("/menu")}>Quay lại</button>
         </div>
       </div>
       {/* Modal for confirmation */}
@@ -248,6 +300,21 @@ const ConfirmOrder = () => {
             Không
           </Button>
           <Button variant="primary" onClick={handleModalConfirm}>
+            Có
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* Modal for confirming user info */}
+      <Modal show={showConfirmInfoModal} onHide={() => setShowConfirmInfoModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Xác nhận thông tin</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Bạn có chắc chắn rằng thông tin của bạn là chính xác không?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleConfirmInfoModalCancel}>
+            Không
+          </Button>
+          <Button variant="primary" onClick={handleConfirmInfoModalConfirm}>
             Có
           </Button>
         </Modal.Footer>
