@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Card, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const navigate = useNavigate();
@@ -13,6 +14,19 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const totalPrice = selectedItems.reduce((total, item) => item.selected ? total + ((item.dish.optional?.price || 0) * item.quantity) : total, 0);
 
     const handleOrder = () => {
+        let hasError = false;
+        selectedItems.forEach(item => {
+            if (item.quantity <= 0) {
+                toast.error('Số lượng món phải lớn hơn 0');
+                hasError = true;
+            } else if (item.quantity > item.dish.quantity) {
+                toast.error(`Số lượng món không được vượt quá ${item.dish.quantity}`);
+                hasError = true;
+            }
+        });
+
+        if (hasError) return;
+
         const formattedCartItems = selectedItems
             .filter(item => item.selected && item.dish.quantity > 0)
             .map(item => ({
@@ -36,8 +50,21 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
 
     const handleUpdateQuantity = (dishId, quantity, maxQuantity) => {
         if (quantity <= 0) {
-            removeFromCart(dishId);
-        } else if (quantity <= maxQuantity) {
+            toast.error('Số lượng món phải lớn hơn 0');
+        } else if (quantity > maxQuantity) {
+            toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
+        } else {
+            updateCartItemQuantity(dishId, quantity);
+        }
+    };
+
+    const handleQuantityInputChange = (dishId, value, maxQuantity) => {
+        const quantity = parseInt(value, 10);
+        if (isNaN(quantity) || quantity <= 0) {
+            toast.error('Số lượng món phải lớn hơn 0');
+        } else if (quantity > maxQuantity) {
+            toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
+        } else {
             updateCartItemQuantity(dishId, quantity);
         }
     };
@@ -59,20 +86,20 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                             disabled={item.dish.quantity === 0}
                                         />
                                     </Col>
-                                    <Col md={3}>
+                                    <Col>
                                         <Card.Img
-                                            variant="top"
                                             src={item.dish.img || 'https://via.placeholder.com/150'}
                                             alt={item.dish.name}
                                             onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
-                                            style={{ height: '150px', width:'150px', objectFit: 'cover', borderRadius: '5px' }}
+                                            style={{ height: '100px', width:'100px', objectFit: 'cover', borderRadius: '5px' }}
                                         />
-                                    </Col>
-                                    <Col md={8}>
                                         <Card.Title>{item.dish.name || "Không xác định"}</Card.Title>
                                         <Card.Text><strong>Kích thước:</strong> {item.dish.optional?.size || 'Không có thông tin'}</Card.Text>
                                         <Card.Text className="fw-bold text-danger">
                                             {item.dish.optional?.price ? `${item.dish.optional.price.toLocaleString()} đ` : 'Chưa có giá'}
+                                        </Card.Text>
+                                        <Card.Text className="text-muted">
+                                            <strong>Số lượng còn lại:</strong> {item.dish.quantity}
                                         </Card.Text>
                                         <div className="d-flex justify-content-end align-items-center mt-2">
                                             <Button 
@@ -82,7 +109,23 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                             >
                                                 -
                                             </Button>
-                                            <span className="mx-2">{item.quantity}</span>
+                                            <Form.Control
+                                                type="number"
+                                                value={item.quantity}
+                                                onChange={(e) => setSelectedItems(prevItems => {
+                                                    const newItems = [...prevItems];
+                                                    newItems[index].quantity = e.target.value;
+                                                    return newItems;
+                                                })}
+                                                onBlur={(e) => handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity)}
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity);
+                                                    }
+                                                }}
+                                                className="mx-2"
+                                                style={{ width: '100px', textAlign: 'center' }}
+                                            />
                                             <Button 
                                                 variant="secondary" 
                                                 size="sm" 

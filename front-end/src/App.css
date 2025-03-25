@@ -39,3 +39,12 @@
 .content-container {
     margin-top: 40px; /* Adjust this value based on the height of your header */
 }
+
+.access-denied {
+  color: red;
+  text-align: center;
+  margin-top: 50px;
+  font-size: 2rem;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+}

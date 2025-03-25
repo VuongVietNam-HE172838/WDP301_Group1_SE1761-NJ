@@ -143,7 +143,6 @@ exports.getAllFeedback = async (req, res) => {
             });
 
         // 🛑 In log ra để kiểm tra dữ liệu nhận được từ DB
-        console.log("Feedback List with Populated Data:", JSON.stringify(feedbackList, null, 2));
 
         // Format lại dữ liệu
         const formattedFeedbacks = feedbackList.map(feedback => ({

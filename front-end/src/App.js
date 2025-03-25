@@ -28,7 +28,24 @@ import CartStaff from './components/CartStaff';
 import UserProfile from './components/UserProfile';
 import TransactionHistory from './components/TransactionHistory';
 import OrderHistory from './components/OrderHistory';
+
+import AdminStatistics from './components/AdminStatistics';
+import ManageAccounts from './components/ManageAccounts';
+
 import Feedback from './components/Feedback';
+
+const getRole = () => {
+  const accountDetail = JSON.parse(localStorage.getItem('accountDetail'));
+  return accountDetail?.role || null;
+};
+
+const RoleBasedRoute = ({ role, children }) => {
+  const userRole = getRole();
+  if (userRole === role) {
+    return children;
+  }
+  return <h1 className="access-denied">Access Denied</h1>;  
+};
 
 const App = () => {
   return (
@@ -46,13 +63,35 @@ const App = () => {
           <Route path="/menu" element={<Menu />} />
           <Route path="/introduction" element={<Intro />} />
           <Route path="/verify-email" element={<VerifyEmail/>} />
-          <Route path="/admin" element={<AdminDashboard />}>
+          <Route
+            path="/admin"
+            element={
+              <RoleBasedRoute role="ADMIN">
+                <AdminDashboard />
+              </RoleBasedRoute>
+            }
+          >
             <Route path="verify-accounts" element={<AccountList />} />
             <Route path="billing" element={<BillHistory />} />
-
+            <Route path="statistics" element={<AdminStatistics />} />
+            <Route path="manage-account" element={<ManageAccounts />} />
           </Route>
-          <Route path="/admin/manage-blog" element={<ManageBlog />} />
-          <Route path="/admin/feedback" element={<Feedback />} />
+          <Route
+            path="/admin/manage-blog"
+            element={
+              <RoleBasedRoute role="ADMIN">
+                <ManageBlog />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="/admin/feedback"
+            element={
+              <RoleBasedRoute role="ADMIN">
+                <Feedback />
+              </RoleBasedRoute>
+            }
+          />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/transaction-history" element={<TransactionHistory />} />
           <Route path="/order-history" element={<OrderHistory />} />
@@ -61,10 +100,24 @@ const App = () => {
           <Route path="/payments" element={<QR/>} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/cartStaff" element={<CartStaff />} />
-          <Route path="/staff-order" element={<StaffOrder />} />
+          <Route
+            path="/staff-order"
+            element={
+              <RoleBasedRoute role="STAFF">
+                <StaffOrder />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="/confirm-orderStaff"
+            element={
+              <RoleBasedRoute role="STAFF">
+                <ConfirmOrderStaff />
+              </RoleBasedRoute>
+            }
+          />
           <Route path="/confirm-order" element={<ConfirmOrder />} />
-          <Route path="/confirm-orderStaff" element={<ConfirmOrderStaff />} />
-          <Route path='*' element={<h1>Not Found</h1>} />
+          <Route path='*' element={<h1 className="access-denied">Not Found</h1>} />
           <Route path='/success' element={<PaymentSuccess/>} />
 
         </Routes>

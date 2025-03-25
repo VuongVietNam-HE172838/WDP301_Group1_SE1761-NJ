@@ -16,7 +16,6 @@ exports.getCategories = async (req, res) => {
 exports.getCategoryById = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log("Received ID:", id);
 
         // ✅ Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -62,8 +61,6 @@ exports.updateCategory = async (req, res) => {
         const { id } = req.params;
         const { name } = req.body;  // Chỉ cần lấy name từ body
 
-        console.log("Updating category ID:", id);  // Thêm log để kiểm tra ID
-
         // Kiểm tra xem id có hợp lệ không
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid ID format" });
@@ -95,7 +92,6 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log("Deleting category ID:", id);
 
         // ✅ Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -140,7 +136,6 @@ exports.getAllDishes = async (req, res) => {
 exports.getDishById = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log("Received Dish ID:", id);
 
         // ✅ Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {

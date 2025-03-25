@@ -7,10 +7,8 @@ const jwt = require('jsonwebtoken');
 
 const createOrder = async (req, res) => {
     try {
-        const { items, order_type, total_price, user_info, delivery_method, delivery_time } = req.body;
+        const { items, order_type, total_price, user_info, delivery_method, delivery_time, payment_method } = req.body;
         const user = req.user;
-
-        console.log('Creating order for user:', user);
 
         // Create a new bill
         const newBill = new Bill({
@@ -26,14 +24,10 @@ const createOrder = async (req, res) => {
             })),
             delivery_method,
             delivery_time,
-            isPaid: false // Ensure isPaid is false
+            isPaid: payment_method === 'cash' // Set isPaid to true if payment method is cash
         });
 
-        console.log('New bill:', newBill);
-
         await newBill.save();
-
-        console.log('Bill saved successfully');
 
         // Create a new order
         const newOrder = new Order({
@@ -43,16 +37,35 @@ const createOrder = async (req, res) => {
             status: 'on going' // Set order status to on going
         });
 
-        console.log('New order:', newOrder);
-
         await newOrder.save();
-
-        console.log('Order saved successfully');
 
         res.status(201).json({ message: 'Order created successfully', order: newOrder });
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ message: 'Failed to create order', error });
+    }
+};
+
+const confirmPayment = async (req, res) => {
+    try {
+        const { orderId, payment_method } = req.body;
+
+
+        const order = await Order.findById(orderId).populate('bill');
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (payment_method !== 'cash' && payment_method !== 'qr') {
+            return res.status(400).json({ message: 'Invalid payment method' });
+        }
+
+        order.bill.isPaid = true;
+        await order.bill.save();
+
+        res.status(200).json({ message: `Payment confirmed by ${payment_method}`, order });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to confirm payment', error });
     }
 };
 
@@ -74,8 +87,6 @@ const getStaffOrders = async (req, res) => {
         //         order.bill.customer_name = accountDetail.full_name;
         //     }
         // }
-
-        console.log('Staff orders with populated data:', orders);
 
         res.status(200).json({ orders });
     } catch (error) {
@@ -134,26 +145,29 @@ const getOnlinePaidOrders = async (req, res) => {
         const orders = await Order.find({ order_type: 'online' })
             .populate({
                 path: 'bill',
-                // match: { isPaid: true }, // Only fetch paid bills
+                match: { isPaid: true }, // Only fetch paid bills
                 populate: [
                     { path: 'user_id', model: 'Account' },
                     { path: 'items.item_id', model: 'Dish' }
                 ]
-            });
+            }).sort({ updated_at: -1 }); // Sort by updated_at in descending order;
 
-        console.log('Online paid orders with populated data:', orders);
+        // Filter out orders where the bill is null (because isPaid was false)
+        const filteredOrders = orders.filter(order => order.bill !== null);
 
-        res.status(200).json({ orders });
+        res.status(200).json({ orders: filteredOrders });
     } catch (error) {
         console.error('Error fetching online paid orders:', error);
         res.status(500).json({ message: 'Error fetching online paid orders', error });
     }
 };
 
+
 module.exports = {
     createOrder,
     getStaffOrders,
     getOrderDetails,
     updateOrderStatus,
-    getOnlinePaidOrders // Export the new function
+    getOnlinePaidOrders,
+    confirmPayment // Export the new function
 };

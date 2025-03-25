@@ -110,11 +110,11 @@ function Header() {
                         Chi tiết Profile
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link className="dropdown-item" to="/transaction-history">
                         Lịch sử giao dịch
                       </Link>
-                    </li>
+                    </li> */}
                     <li>
                       <Link className="dropdown-item" to="/order-history">
                         Lịch sử đặt hàng
@@ -124,6 +124,13 @@ function Header() {
                       <li>
                         <Link className="dropdown-item" to="/staff-order">
                           Staff Dashboard
+                        </Link>
+                      </li>
+                    )}
+                    {accountDetail?.role === "ADMIN" && (
+                      <li>
+                        <Link className="dropdown-item" to="/admin">
+                          ADMIN Dashboard
                         </Link>
                       </li>
                     )}
