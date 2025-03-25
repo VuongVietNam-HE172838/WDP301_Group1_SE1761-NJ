@@ -5,9 +5,14 @@ import { useNavigate } from 'react-router-dom';
 const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const navigate = useNavigate();
     const [selectedItems, setSelectedItems] = useState(cartItems.map(item => ({ ...item, selected: true })));
+    const [inputValues, setInputValues] = useState({}); // State để quản lý giá trị hiển thị của input
 
     useEffect(() => {
         setSelectedItems(cartItems.map(item => ({ ...item, selected: true })));
+        setInputValues(cartItems.reduce((acc, item) => {
+            acc[item.dish._id] = item.quantity.toString(); // Khởi tạo giá trị hiển thị từ số lượng
+            return acc;
+        }, {}));
     }, [cartItems]);
 
     const totalPrice = selectedItems.reduce((total, item) => item.selected ? total + (item.dish.optional?.price || 0) * item.quantity : total, 0);
@@ -45,13 +50,21 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     };
 
     const handleQuantityInputChange = (dishId, value, maxQuantity) => {
-        const quantity = parseInt(value, 10);
-        if (isNaN(quantity) || quantity <= 0) {
-            updateCartItemQuantity(dishId, 1); // Set to 1 if invalid or less than 1
+        const sanitizedValue = value.replace(/[^0-9]/g, ""); // Loại bỏ ký tự không phải số
+        const quantity = sanitizedValue === "" ? 0 : parseInt(sanitizedValue, 10); // Chuyển thành số hoặc 0 nếu rỗng
+
+        console.log('Giá trị nhập vào:', sanitizedValue);
+        console.log('Số đã parse:', quantity);
+
+        // Cập nhật giá trị hiển thị ngay lập tức
+        setInputValues(prev => ({ ...prev, [dishId]: sanitizedValue }));
+
+        if (quantity <= 0) {
+            updateCartItemQuantity(dishId, 1); // Đặt số lượng về 1 nếu không hợp lệ
         } else if (quantity > maxQuantity) {
-            updateCartItemQuantity(dishId, maxQuantity); // Set to max quantity if exceeded
+            updateCartItemQuantity(dishId, maxQuantity); // Đặt số lượng về tối đa nếu vượt quá
         } else {
-            updateCartItemQuantity(dishId, quantity);
+            updateCartItemQuantity(dishId, quantity); // Cập nhật số lượng hợp lệ
         }
     };
 
@@ -100,7 +113,7 @@ const Cart = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                             </Button>
                                             <Form.Control
                                                 type="number"
-                                                value={item.quantity}
+                                                value={inputValues[item.dish._id] || ""}
                                                 onChange={(e) => handleQuantityInputChange(item.dish._id, e.target.value, item.dish.quantity)}
                                                 className="mx-2"
                                                 style={{ width: '60px', textAlign: 'center' }}
