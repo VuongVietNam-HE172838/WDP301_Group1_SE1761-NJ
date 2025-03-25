@@ -33,7 +33,7 @@ const ManageCategory = () => {
 
   const handleUpdate = async () => {
     if (!editedCategory || !editedCategory.name.trim()) {
-      toast.warning("Tên danh mục không được để trống!");
+      toast.warning("Tên Category không được để trống!");
       return;
     }
 
@@ -49,29 +49,29 @@ const ManageCategory = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      toast.success("Cập nhật danh mục thành công!"); 
+      toast.success("Cập nhật Category thành công!"); 
       fetchCategories(); 
       setEditedCategory(null);
     } catch (error) {
-      toast.error("Lỗi khi cập nhật danh mục!"); 
+      toast.error("Lỗi khi cập nhật Category!"); 
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xóa danh mục này không?")) {
+    if (window.confirm("Bạn có chắc muốn xóa Category này không?")) {
       try {
         await axios.delete(`http://localhost:9999/menu/category/${id}`);
-        toast.success("Xóa danh mục thành công!"); 
+        toast.success("Xóa Category thành công!"); 
         fetchCategories(); 
       } catch (error) {
-        toast.error("Lỗi khi xóa danh mục!"); 
+        toast.error("Lỗi khi xóa Category!"); 
       }
     }
   };
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
-      toast.warning("Tên danh mục không được để trống!");
+      toast.warning("Tên Category không được để trống!");
       return;
     }
   
@@ -87,12 +87,12 @@ const ManageCategory = () => {
   
     try {
       await axios.post("http://localhost:9999/menu/category", newCategory);
-      toast.success("Thêm danh mục thành công!"); 
+      toast.success("Thêm Category thành công!"); 
       fetchCategories(); 
       setNewCategoryName(""); 
       setShowAddModal(false); 
     } catch (error) {
-      toast.error("Lỗi khi thêm danh mục!"); 
+      toast.error("Lỗi khi thêm Category!"); 
     }
   };
 
