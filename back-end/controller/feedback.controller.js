@@ -1,6 +1,7 @@
 const Feedback = require("../models/feedback");
 const Order = require("../models/order");
 const AccountDetail = require("../models/accountDetail"); // Import AccountDetail
+const mongoose = require("mongoose");
 
 // Thêm feedback
 exports.addFeedback = async (req, res) => {
@@ -80,28 +81,27 @@ exports.updateFeedback = async (req, res) => {
         const { feedbackId } = req.params;
         const { rating, comment } = req.body;
 
-        // Tìm AccountDetail bằng feedback_by (Account ID)
-        const accountDetail = await AccountDetail.findOne({ account_id: feedback_by });
-        if (!accountDetail) {
-            return res.status(404).json({ message: "Không tìm thấy chi tiết tài khoản" });
+        // Kiểm tra xem feedbackId có hợp lệ không
+        if (!mongoose.Types.ObjectId.isValid(feedbackId)) {
+            return res.status(400).json({ message: "Feedback ID không hợp lệ" });
         }
-        feedback_by = accountDetail._id; // Gán ID của AccountDetail vào feedback_by
 
-
-        const updatedFeedback = await Feedback.findByIdAndUpdate(
-            feedbackId,
-            { rating, comment },
-            { new: true } // Trả về dữ liệu sau khi cập nhật
-        ).populate({ path: "order", model: "Order", select: "_id" })
-        .populate({
-            path: "feedback_by",
-            model: "AccountDetail",
-            select: "full_name" 
-        });
-
-        if (!updatedFeedback) {
+        // Kiểm tra xem feedback có tồn tại không
+        const existingFeedback = await Feedback.findById(feedbackId);
+        if (!existingFeedback) {
             return res.status(404).json({ message: "Không tìm thấy feedback" });
         }
+
+        // Cập nhật feedback
+        existingFeedback.rating = rating ?? existingFeedback.rating;
+        existingFeedback.comment = comment ?? existingFeedback.comment;
+
+        await existingFeedback.save();
+
+        // Populate order và feedback_by để lấy dữ liệu đầy đủ
+        const updatedFeedback = await Feedback.findById(feedbackId)
+            .populate({ path: "order", model: "Order", select: "_id" })
+            .populate({ path: "feedback_by", model: "AccountDetail", select: "full_name" });
 
         // Format lại dữ liệu
         const formattedFeedback = {
@@ -119,6 +119,7 @@ exports.updateFeedback = async (req, res) => {
         res.status(500).json({ message: "Lỗi server", error: error.message });
     }
 };
+
 
 
 // Xóa feedback
