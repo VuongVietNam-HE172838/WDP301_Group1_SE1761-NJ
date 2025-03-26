@@ -10,6 +10,8 @@ import ManageAccounts from './ManageAccounts';
 import Feedback from './Feedback';
 
 import '../AdminDashboard.css';
+import OrderHistory from './OrderHistory';
+import ManageOrder from './ManageOrder';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("statistics");
@@ -28,6 +30,8 @@ const AdminDashboard = () => {
         return <ManageAccounts />;
       case "feedback":
         return <Feedback />;
+      case "order":
+        return <ManageOrder />;
       default:
         return <AdminStatistics />;
     }
@@ -83,6 +87,16 @@ const AdminDashboard = () => {
                 >
 
                   <i className="bx bxs-news"></i> Quản lí Blog
+
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  className={`nav-link ${activeTab === "feedback" ? "active" : ""}`}
+                  onClick={() => setActiveTab("order")}
+                >
+
+                  <i className="bx bxs-news"></i> Quản lý Order
 
                 </Link>
               </li>

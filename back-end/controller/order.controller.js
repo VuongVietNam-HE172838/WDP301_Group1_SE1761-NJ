@@ -142,7 +142,9 @@ const updateOrderStatus = async (req, res) => {
 
 const getOnlinePaidOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ order_type: 'online' })
+        const userId = req.user._id; // Get the logged-in user's ID
+        
+        const orders = await Order.find({ order_type: 'online', order_by: userId }) // Filter by user ID
             .populate({
                 path: 'bill',
                 match: { isPaid: true }, // Only fetch paid bills
@@ -162,6 +164,27 @@ const getOnlinePaidOrders = async (req, res) => {
     }
 };
 
+const getAllOrders = async (req, res) => {
+    try {
+        console.log('get all orders');
+        const allOrders = await Order.find()
+        const orders = await Order.find()
+            .populate({
+                path: 'bill',
+                populate: [
+                    { path: 'user_id', model: 'Account' },
+                    { path: 'items.item_id', model: 'Dish' }
+                ]
+            });
+
+            console.log('all orders: ',allOrders);
+
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error('Error fetching staff orders:', error);
+        res.status(500).json({ message: 'Error fetching staff orders', error });
+    }
+};
 
 module.exports = {
     createOrder,
@@ -169,5 +192,6 @@ module.exports = {
     getOrderDetails,
     updateOrderStatus,
     getOnlinePaidOrders,
-    confirmPayment // Export the new function
+    confirmPayment,
+    getAllOrders
 };
