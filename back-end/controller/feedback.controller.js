@@ -1,5 +1,6 @@
 const Feedback = require("../models/feedback");
 const Order = require("../models/order");
+const AccountDetail = require("../models/accountDetail"); // Import AccountDetail
 
 // Thêm feedback
 exports.addFeedback = async (req, res) => {
@@ -43,6 +44,14 @@ exports.addFeedback = async (req, res) => {
             feedback_by = orderData.order_by; // Lấy `order_by` của order
         }
 
+        // Tìm AccountDetail bằng feedback_by (Account ID)
+        const accountDetail = await AccountDetail.findOne({ account_id: feedback_by });
+        if (!accountDetail) {
+            return res.status(404).json({ message: "Không tìm thấy chi tiết tài khoản" });
+        }
+
+        feedback_by = accountDetail._id; // Gán ID của AccountDetail vào feedback_by
+        
         // Kiểm tra lại trước khi lưu
         if (!order || !feedback_by) {
             return res.status(400).json({ message: "Thiếu order hoặc feedback_by hợp lệ" });
@@ -142,6 +151,8 @@ exports.getAllFeedback = async (req, res) => {
                 select: "full_name"
             });
 
+            console.log('feedback controller: ',feedbackList);
+
         // 🛑 In log ra để kiểm tra dữ liệu nhận được từ DB
 
         // Format lại dữ liệu
@@ -162,6 +173,8 @@ exports.getAllFeedback = async (req, res) => {
             feedback_by: feedback.feedback_by?.full_name || "Không có tên",
             created_at: feedback.created_at
         }));
+
+        
 
         res.status(200).json({ feedbacks: formattedFeedbacks });
     } catch (error) {
