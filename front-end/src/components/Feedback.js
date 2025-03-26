@@ -20,7 +20,8 @@ const Feedback = () => {
         const response = await axios.get(`${process.env.REACT_APP_URL_API_BACKEND}/feedback`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-
+        console.log('feedback: ',response.data);
+        
         setFeedbacks(response.data.feedbacks);
       } catch (error) {
         console.error("Lỗi tải feedback:", error);
