@@ -17,9 +17,6 @@ const authMiddleware = async (req, res, next) => {
     }
 
     req.user = user;
-    const role = user.role_id.name;
-
-    console.log('middleware role: ', role);
 
     if (req.path === '/admin' && role !== 'ADMIN') {
       return res.status(403).json({ message: 'Access denied' });

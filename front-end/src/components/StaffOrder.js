@@ -39,6 +39,7 @@ const StaffOrder = () => {
                 // **Lọc những món ăn có quantity > 0**
                 const filteredDishes = response.data.filter(dish => parseInt(dish.quantity) > 0);
                 setDishes(filteredDishes);
+                // setDishes(response.data);
             } catch (error) {
                 console.error("Error fetching dishes:", error);
             }
@@ -65,6 +66,8 @@ const StaffOrder = () => {
     }, []);
 
     const addToCart = (dish) => {
+        toast.dismiss();
+        toast.clearWaitingQueue();
         const existingItem = cartItems.find(item => item.dish._id === dish._id);
         if (existingItem) {
             setCartItems(cartItems.map(item => item.dish._id === dish._id ? { ...item, quantity: item.quantity + 1 } : item));
@@ -75,10 +78,14 @@ const StaffOrder = () => {
     };
 
     const removeFromCart = (dishId) => {
+        toast.dismiss();
+        toast.clearWaitingQueue();
         setCartItems(cartItems.filter(item => item.dish._id !== dishId));
     };
 
     const updateCartItemQuantity = (dishId, quantity) => {
+        toast.dismiss();
+        toast.clearWaitingQueue();
         if (quantity <= 0) {
             toast.error('Số lượng món phải lớn hơn 0');
         } else {
@@ -211,10 +218,10 @@ const StaffOrder = () => {
                                                     onError={(e) => e.target.src = 'https://via.placeholder.com/50'}
                                                     style={{ height: '50px', width: '50px', objectFit: 'cover', borderRadius: '5px' }} // Small image
                                                 />
-                                                <Card.Title className="fw-bold mb-0 ms-3" style={{ fontSize: '1rem' }}>{dish.name}</Card.Title> {/* Adjust font size */}
+                                                <Card.Title className="fw-bold mb-0 ms-3" style={{ fontSize: '1rem' }}>{dish.name}</Card.Title> 
                                                 <p className="mb-0 ms-3" style={{ fontSize: '0.8rem' }}>Còn lại: {dish.quantity}</p> {/* Display remaining quantity */}
                                             </div>
-                                            <Button variant="danger" className="fw-bold" onClick={() => addToCart(dish)} style={{ fontSize: '0.9rem' }}>Thêm</Button> {/* Adjust font size */}
+                                            <Button variant="danger" className="fw-bold" onClick={() => addToCart(dish)} style={{ fontSize: '0.9rem' }}>Thêm</Button> 
                                         </Card.Body>
                                     </Card>
                                 </Col>

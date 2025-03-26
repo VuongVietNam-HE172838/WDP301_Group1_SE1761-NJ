@@ -5,10 +5,10 @@ import { toast } from 'react-toastify';
 
 const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     const navigate = useNavigate();
-    const [selectedItems, setSelectedItems] = useState(cartItems.map(item => ({ ...item, selected: true })));
+    const [selectedItems, setSelectedItems] = useState(cartItems.map(item => ({ ...item, selected: true, error: '' })));
 
     useEffect(() => {
-        setSelectedItems(cartItems.map(item => ({ ...item, selected: true })));
+        setSelectedItems(cartItems.map(item => ({ ...item, selected: true, error: '' })));
     }, [cartItems]);
 
     const totalPrice = selectedItems.reduce((total, item) => item.selected ? total + ((item.dish.optional?.price || 0) * item.quantity) : total, 0);
@@ -17,9 +17,11 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
         let hasError = false;
         selectedItems.forEach(item => {
             if (item.quantity <= 0) {
+                toast.dismiss();
                 toast.error('Số lượng món phải lớn hơn 0');
                 hasError = true;
             } else if (item.quantity > item.dish.quantity) {
+                toast.dismiss();
                 toast.error(`Số lượng món không được vượt quá ${item.dish.quantity}`);
                 hasError = true;
             }
@@ -49,24 +51,50 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
     };
 
     const handleUpdateQuantity = (dishId, quantity, maxQuantity) => {
-        if (quantity <= 0) {
-            toast.error('Số lượng món phải lớn hơn 0');
-        } else if (quantity > maxQuantity) {
-            toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
-        } else {
-            updateCartItemQuantity(dishId, quantity);
-        }
+        setSelectedItems(prevItems => {
+            const newItems = prevItems.map(item => {
+                if (item.dish._id === dishId) {
+                    if (quantity <= 0) {
+                        item.error = 'Số lượng món phải lớn hơn 0';
+                        toast.dismiss();
+                        toast.error('Số lượng món phải lớn hơn 0');
+                    } else if (quantity > maxQuantity) {
+                        item.error = `Số lượng món không được vượt quá ${maxQuantity}`;
+                        toast.dismiss();
+                        toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
+                    } else {
+                        item.error = '';
+                        updateCartItemQuantity(dishId, quantity);
+                    }
+                }
+                return item;
+            });
+            return newItems;
+        });
     };
 
     const handleQuantityInputChange = (dishId, value, maxQuantity) => {
         const quantity = parseInt(value, 10);
-        if (isNaN(quantity) || quantity <= 0) {
-            toast.error('Số lượng món phải lớn hơn 0');
-        } else if (quantity > maxQuantity) {
-            toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
-        } else {
-            updateCartItemQuantity(dishId, quantity);
-        }
+        setSelectedItems(prevItems => {
+            const newItems = prevItems.map(item => {
+                if (item.dish._id === dishId) {
+                    if (isNaN(quantity) || quantity <= 0) {
+                        item.error = 'Số lượng món phải lớn hơn 0';
+                        toast.dismiss();
+                        toast.error('Số lượng món phải lớn hơn 0');
+                    } else if (quantity > maxQuantity) {
+                        item.error = `Số lượng món không được vượt quá ${maxQuantity}`;
+                        toast.dismiss();
+                        toast.error(`Số lượng món không được vượt quá ${maxQuantity}`);
+                    } else {
+                        item.error = '';
+                        updateCartItemQuantity(dishId, quantity);
+                    }
+                }
+                return item;
+            });
+            return newItems;
+        });
     };
 
     return (
@@ -135,6 +163,7 @@ const CartStaff = ({ cartItems, removeFromCart, updateCartItemQuantity }) => {
                                                 +
                                             </Button>
                                         </div>
+                                        {item.error && <p className="text-danger mt-2">{item.error}</p>}
                                         <Button variant="danger" className="mt-2" onClick={() => removeFromCart(item.dish._id)}>Xóa</Button>
                                     </Col>
                                 </Row>
