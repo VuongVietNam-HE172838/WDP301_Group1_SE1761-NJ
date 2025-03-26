@@ -80,6 +80,14 @@ exports.updateFeedback = async (req, res) => {
         const { feedbackId } = req.params;
         const { rating, comment } = req.body;
 
+        // Tìm AccountDetail bằng feedback_by (Account ID)
+        const accountDetail = await AccountDetail.findOne({ account_id: feedback_by });
+        if (!accountDetail) {
+            return res.status(404).json({ message: "Không tìm thấy chi tiết tài khoản" });
+        }
+        feedback_by = accountDetail._id; // Gán ID của AccountDetail vào feedback_by
+
+
         const updatedFeedback = await Feedback.findByIdAndUpdate(
             feedbackId,
             { rating, comment },
