@@ -19,6 +19,8 @@ const billSchema = new Schema({
   delivery_time: { type: Date, required: true },
   isPaid: { type: Boolean, default: false }, // Ensure isPaid is false by default
   created_at: { type: Date, default: Date.now },
+  use_refund_balance: { type: Boolean, default: false }, // for online orders
+  refund_balance: { type: Number, default: 0 }, // for online orders
 });
 
 const Bill = mongoose.model('Bill', billSchema);

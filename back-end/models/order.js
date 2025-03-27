@@ -9,7 +9,8 @@ const orderSchema = new Schema({
   order_type: { type: String, enum: ['counter', 'online'], required: true }, // Add order type
   note: { type: String, required: false },
   updated_at: { type: Date, default: Date.now },
-  payment_at: { type: Date }
+  payment_at: { type: Date },
+  note: { type: String, required: false },
 }, { timestamps: true }); // Enable timestamps to manage createdAt and updatedAt automatically
 
 const Order = mongoose.model('Order', orderSchema);

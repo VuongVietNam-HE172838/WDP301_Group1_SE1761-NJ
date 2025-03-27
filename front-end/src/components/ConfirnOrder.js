@@ -11,47 +11,54 @@ const ConfirmOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { cartItems: initialCartItems, totalPrice } = location.state;
+
   const [cartItems, setCartItems] = useState(initialCartItems);
-
   const [userInfo, setUserInfo] = useState({ full_name: "", phone_number: "", address: "" });
-  const [originalUserInfo, setOriginalUserInfo] = useState(null); // Store original user info for comparison
+  const [originalUserInfo, setOriginalUserInfo] = useState(null);
   const [deliveryMethod, setDeliveryMethod] = useState("Tự đến nhận hàng");
-  const [showModal, setShowModal] = useState(false);
-  const [showConfirmInfoModal, setShowConfirmInfoModal] = useState(false); // New state for confirmation modal
-  const [errors, setErrors] = useState({ address: "", phone_number: "" }); // State for validation errors
+  const [deliveryTime, setDeliveryTime] = useState(new Date(new Date().getTime() + 16 * 60000));
+  const [errors, setErrors] = useState({ address: "", phone_number: "" });
+  const [refundBalance, setRefundBalance] = useState(0);
+  const [useRefundBalance, setUseRefundBalance] = useState(false);
 
-  // Set initial delivery time to 16 minutes from now
-  const initialDeliveryTime = new Date(new Date().getTime() + 16 * 60000);
-  const [deliveryTime, setDeliveryTime] = useState(initialDeliveryTime);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
+
       try {
         const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/account/information`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
+
         if (response.ok) {
           const data = await response.json();
-          setUserInfo({ full_name: data.full_name || "", phone_number: data.phone_number || "", address: data.address || "" });
-          setOriginalUserInfo({ full_name: data.full_name || "", phone_number: data.phone_number || "", address: data.address || "" }); // Save original info
+          setUserInfo({
+            full_name: data.full_name || "",
+            phone_number: data.phone_number || "",
+            address: data.address || "",
+          });
+          setOriginalUserInfo({
+            full_name: data.full_name || "",
+            phone_number: data.phone_number || "",
+            address: data.address || "",
+          });
+          setRefundBalance(data.account_id?.refund_balance || 0); // Set refund_balance from account_id
         }
       } catch (error) {
         console.error("Error fetching user information:", error);
       }
     };
+
     fetchUserInfo();
   }, []);
 
-  const formatAmount = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
+
+  const formatAmount = (amount) =>
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 
   const updateQuantity = (index, change) => {
     setCartItems((prevItems) =>
@@ -68,14 +75,35 @@ const ConfirmOrder = () => {
   };
 
   const calculateTotalAmount = () => {
-    return cartItems.reduce((total, item) => total + item.optional.price * item.quantity, 0);
+    const total = cartItems.reduce((total, item) => total + item.optional.price * item.quantity, 0);
+    return useRefundBalance ? Math.max(0, total - refundBalance) : total;
+  };
+
+  const validateForm = () => {
+    const newErrors = { address: "", phone_number: "" };
+    let isValid = true;
+
+    if (!userInfo.address.trim()) {
+      newErrors.address = "Địa chỉ không được để trống.";
+      isValid = false;
+    }
+
+    if (!userInfo.phone_number.trim()) {
+      newErrors.phone_number = "Số điện thoại không được để trống.";
+      isValid = false;
+    } else if (!/^\d{9}$/.test(userInfo.phone_number)) {
+      newErrors.phone_number = "Số điện thoại phải là 9 chữ số.";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const updateUserProfile = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    // Check if user info has changed
     if (
       userInfo.full_name !== originalUserInfo.full_name ||
       userInfo.phone_number !== originalUserInfo.phone_number ||
@@ -103,51 +131,12 @@ const ConfirmOrder = () => {
     }
   };
 
-  const validateForm = () => {
-    let isValid = true;
-    const newErrors = { address: "", phone_number: "" };
-
-    if (!userInfo.address.trim()) {
-      newErrors.address = "Địa chỉ không được để trống.";
-      isValid = false;
-    }
-
-    if (!userInfo.phone_number.trim()) {
-      newErrors.phone_number = "Số điện thoại không được để trống.";
-      isValid = false;
-    } else if (!/^\d{9}$/.test(userInfo.phone_number)) {
-      newErrors.phone_number = "Số điện thoại phải là 9 chữ số.";
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handlePayment = async () => {
-    if (!validateForm()) {
-      return; // Stop if validation fails
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Bạn cần đăng nhập để thực hiện chức năng này!");
-      return;
-    }
-    if (
-      userInfo.full_name !== originalUserInfo.full_name ||
-      userInfo.phone_number !== originalUserInfo.phone_number ||
-      userInfo.address !== originalUserInfo.address
-    ) {
-      setShowModal(true); // Show the modal if user info has changed
-    } else {
-      setShowConfirmInfoModal(true); // Show confirmation modal
-    }
-  };
-
   const proceedWithPayment = async () => {
     try {
       const token = localStorage.getItem("token");
+      const totalAmount = cartItems.reduce((total, item) => total + item.optional.price * item.quantity, 0); // Ensure totalAmount is calculated correctly
+      const refundBalanceToUse = useRefundBalance ? Math.min(refundBalance, totalAmount) : 0; // Calculate refund balance to use
+
       const response = await fetch(`${process.env.REACT_APP_URL_API_BACKEND}/order/createOrder`, {
         method: "POST",
         headers: {
@@ -157,44 +146,64 @@ const ConfirmOrder = () => {
         body: JSON.stringify({
           items: cartItems,
           order_type: "online",
-          total_price: totalPrice,
+          total_price: totalAmount - refundBalanceToUse, // Adjust total price after applying refund balance
           user_info: userInfo,
           delivery_method: deliveryMethod,
           delivery_time: deliveryTime,
+          use_refund_balance: useRefundBalance,
+          refund_balance: refundBalanceToUse, // Pass the correct refund balance to use
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         toast.success("Đơn hàng đã được tạo thành công!");
-        navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill } });
+        navigate("/payments", { 
+          state: { 
+            cartItems, 
+            deliveryMethod, 
+            deliveryTime, 
+            billId: data.order.bill, 
+            totalAmount: totalAmount - refundBalanceToUse // Include totalAmount in location state
+          } 
+        });
       } else {
-        const errorData = await response.json();
         toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
       }
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Có lỗi xảy ra khi tạo đơn hàng!");
     }
-  }
-  const handleModalConfirm = async () => {
-    setShowModal(false);
-    await updateUserProfile(); // Update user profile
-    await proceedWithPayment(); // Proceed with payment
   };
 
-  const handleModalCancel = async () => {
-    setShowModal(false);
-    await proceedWithPayment(); // Skip updating and proceed with payment
+  const handlePayment = () => {
+    if (!validateForm()) return;
+
+    if (
+      userInfo.full_name !== originalUserInfo.full_name ||
+      userInfo.phone_number !== originalUserInfo.phone_number ||
+      userInfo.address !== originalUserInfo.address
+    ) {
+      setShowUpdateModal(true);
+    } else {
+      setShowConfirmModal(true);
+    }
   };
 
-  const handleConfirmInfoModalConfirm = async () => {
-    setShowConfirmInfoModal(false);
-    await proceedWithPayment(); // Proceed with payment after confirmation
+  const handleUpdateModalConfirm = async () => {
+    setShowUpdateModal(false);
+    await updateUserProfile();
+    await proceedWithPayment();
   };
 
-  const handleConfirmInfoModalCancel = () => {
-    setShowConfirmInfoModal(false);
+  const handleUpdateModalCancel = async () => {
+    setShowUpdateModal(false);
+    await proceedWithPayment();
+  };
+
+  const handleConfirmModalConfirm = async () => {
+    setShowConfirmModal(false);
+    await proceedWithPayment();
   };
 
   return (
@@ -207,17 +216,42 @@ const ConfirmOrder = () => {
             {cartItems.map((item, index) => (
               <div className="accordion-item" key={index}>
                 <h2 className="accordion-header">
-                  <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target={`#item-${index}`}>
+                  <button
+                    className="accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target={`#item-${index}`}
+                  >
                     {item.name}
                   </button>
                 </h2>
-                <div id={`item-${index}`} className={`accordion-collapse collapse ${index === cartItems.length - 1 ? "show" : ""}`} data-bs-parent="#cartAccordion">
+                <div
+                  id={`item-${index}`}
+                  className={`accordion-collapse collapse ${
+                    index === cartItems.length - 1 ? "show" : ""
+                  }`}
+                  data-bs-parent="#cartAccordion"
+                >
                   <div className="accordion-body">
-                    <img src={item.img} alt={item.name} className="img-fluid rounded mb-3" style={{ maxWidth: "150px" }} />
-                    <p><strong>Kích thước:</strong> {item.optional.size}</p>
-                    <p><strong>Giá:</strong> {formatAmount(item.optional.price)}</p>
-                    <p><strong>Số lượng:</strong> {item.quantity}</p>
-                    <p><strong>Tổng:</strong> {formatAmount(item.optional.price * item.quantity)}</p>
+                    <img
+                      src={item.img}
+                      alt={item.name}
+                      className="img-fluid rounded mb-3"
+                      style={{ maxWidth: "150px" }}
+                    />
+                    <p>
+                      <strong>Kích thước:</strong> {item.optional.size}
+                    </p>
+                    <p>
+                      <strong>Giá:</strong> {formatAmount(item.optional.price)}
+                    </p>
+                    <p>
+                      <strong>Số lượng:</strong> {item.quantity}
+                    </p>
+                    <p>
+                      <strong>Tổng:</strong>{" "}
+                      {formatAmount(item.optional.price * item.quantity)}
+                    </p>
                     <textarea
                       className="form-control"
                       placeholder="Ghi chú"
@@ -236,7 +270,14 @@ const ConfirmOrder = () => {
           <form>
             <div className="mb-3">
               <label className="form-label">Họ và Tên</label>
-              <input type="text" className="form-control" value={userInfo.full_name} onChange={(e) => setUserInfo({ ...userInfo, full_name: e.target.value })} />
+              <input
+                type="text"
+                className="form-control"
+                value={userInfo.full_name}
+                onChange={(e) =>
+                  setUserInfo({ ...userInfo, full_name: e.target.value })
+                }
+              />
             </div>
             <div className="mb-3">
               <label className="form-label">Số điện thoại</label>
@@ -244,11 +285,17 @@ const ConfirmOrder = () => {
                 <span className="input-group-text">(+84)</span>
                 <input
                   type="text"
-                  className={`form-control ${errors.phone_number ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    errors.phone_number ? "is-invalid" : ""
+                  }`}
                   value={userInfo.phone_number}
-                  onChange={(e) => setUserInfo({ ...userInfo, phone_number: e.target.value })}
+                  onChange={(e) =>
+                    setUserInfo({ ...userInfo, phone_number: e.target.value })
+                  }
                 />
-                {errors.phone_number && <div className="invalid-feedback">{errors.phone_number}</div>}
+                {errors.phone_number && (
+                  <div className="invalid-feedback">{errors.phone_number}</div>
+                )}
               </div>
             </div>
             <div className="mb-3">
@@ -257,18 +304,25 @@ const ConfirmOrder = () => {
                 type="text"
                 className={`form-control ${errors.address ? "is-invalid" : ""}`}
                 value={userInfo.address}
-                onChange={(e) => setUserInfo({ ...userInfo, address: e.target.value })}
+                onChange={(e) =>
+                  setUserInfo({ ...userInfo, address: e.target.value })
+                }
               />
-              {errors.address && <div className="invalid-feedback">{errors.address}</div>}
+              {errors.address && (
+                <div className="invalid-feedback">{errors.address}</div>
+              )}
             </div>
             <div className="mb-3">
               <label className="form-label">Phương thức nhận hàng</label>
-              <select className="form-select" value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value)}>
+              <select
+                className="form-select"
+                value={deliveryMethod}
+                onChange={(e) => setDeliveryMethod(e.target.value)}
+              >
                 <option value="Tự đến nhận hàng">Tự đến nhận hàng</option>
                 <option value="Giao hàng">Giao hàng</option>
               </select>
             </div>
-
             <div className="mb-3">
               <label className="form-label">Thời gian nhận hàng</label>
               <DatePicker
@@ -279,42 +333,78 @@ const ConfirmOrder = () => {
                 timeIntervals={15}
                 dateFormat="dd/MM/yyyy HH:mm"
                 minDate={new Date()}
-                minTime={new Date().getDate() === deliveryTime.getDate() ? initialDeliveryTime : undefined}
+                minTime={
+                  new Date().getDate() === deliveryTime.getDate()
+                    ? new Date()
+                    : undefined
+                }
                 maxTime={new Date().setHours(23, 45)}
                 className="form-control"
               />
             </div>
+            <div className="mb-3">
+              <label className="form-label">Số dư hoàn tiền</label>
+              <p>{formatAmount(refundBalance)}</p>
+              {refundBalance > 0 && (
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="useRefundBalance"
+                    checked={useRefundBalance}
+                    onChange={(e) => setUseRefundBalance(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="useRefundBalance">
+                    Sử dụng số dư hoàn tiền để giảm tổng số tiền
+                  </label>
+                </div>
+              )}
+            </div>
           </form>
-          <button className="btn btn-primary mt-3" onClick={handlePayment}>Thanh toán</button>
-          <button className="btn btn-secondary mt-3 ms-2" onClick={() => navigate("/menu")}>Quay lại</button>
+          <button className="btn btn-primary mt-3" onClick={handlePayment}>
+            Thanh toán
+          </button>
+          <button
+            className="btn btn-secondary mt-3 ms-2"
+            onClick={() => navigate("/menu")}
+          >
+            Quay lại
+          </button>
         </div>
       </div>
-      {/* Modal for confirmation */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+
+      {/* Update Info Modal */}
+      <Modal show={showUpdateModal} onHide={() => setShowUpdateModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Cập nhật thông tin</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Thông tin của bạn vừa bị thay đổi. Bạn có muốn cập nhật thông tin cá nhân trước khi thanh toán không?</Modal.Body>
+        <Modal.Body>
+          Thông tin của bạn vừa bị thay đổi. Bạn có muốn cập nhật thông tin cá
+          nhân trước khi thanh toán không?
+        </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleModalCancel}>
+          <Button variant="secondary" onClick={handleUpdateModalCancel}>
             Không
           </Button>
-          <Button variant="primary" onClick={handleModalConfirm}>
+          <Button variant="primary" onClick={handleUpdateModalConfirm}>
             Có
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* Modal for confirming user info */}
-      <Modal show={showConfirmInfoModal} onHide={() => setShowConfirmInfoModal(false)}>
+
+      {/* Confirm Info Modal */}
+      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Xác nhận thông tin</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Bạn có chắc chắn rằng thông tin của bạn là chính xác không?</Modal.Body>
+        <Modal.Body>
+          Bạn có chắc chắn rằng thông tin của bạn là chính xác không?
+        </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleConfirmInfoModalCancel}>
+          <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
             Không
           </Button>
-          <Button variant="primary" onClick={handleConfirmInfoModalConfirm}>
+          <Button variant="primary" onClick={handleConfirmModalConfirm}>
             Có
           </Button>
         </Modal.Footer>

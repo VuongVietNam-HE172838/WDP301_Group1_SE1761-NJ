@@ -58,6 +58,14 @@ exports.callBackPayment = async (req, res) => {
       }
     }
 
+    if (bill.use_refund_balance) {
+      const account = await Account.findById(bill.user_id);
+      if (account) {
+        account.refund_balance -= bill.refund_balance; // Deduct the refund balance from the user's account
+        await account.save();
+      }
+    }
+
     // Remove the items from the user's cart
     await Cart.updateOne(
       { account_id: bill.user_id },
