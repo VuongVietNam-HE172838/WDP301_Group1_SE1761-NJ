@@ -206,7 +206,7 @@ const updateOrderStatus = async (req, res) => {
                             ${orderDetails}
                         </div>
                         <p>Lý do hủy đơn hàng: <strong>${note}</strong></p>
-                        <p>Số tiền <strong>${(order.bill.total_amount + order.bill.refund_balance).toLocaleString} đ</strong> sẽ được hoàn vào tài khoản của bạn muộn nhất là trong 24 giờ tới. Bạn có thể sử dụng số tiền này cho lần mua hàng tiếp theo.</p>
+                        <p>Số tiền <strong>${(order.bill.total_amount + order.bill.refund_balance).toLocaleString()} đ</strong> sẽ được hoàn vào tài khoản của bạn muộn nhất là trong 24 giờ tới. Bạn có thể sử dụng số tiền này cho lần mua hàng tiếp theo.</p>
                         <p>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email này.</p>
                         <p>Trân trọng,</p>
                         <p>Đội ngũ hỗ trợ khách hàng</p>
