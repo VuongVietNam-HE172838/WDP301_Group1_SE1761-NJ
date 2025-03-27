@@ -162,7 +162,7 @@ const updateOrderStatus = async (req, res) => {
         if (!bill) {
             return res.status(404).json({ message: 'Bill not found' });
         } else {
-            if (bill.use_refund_balance) {
+            if (bill.use_refund_balance && status === 'cancel') {
                 const account = await Account.findById(bill.user_id);
                 if (account) {
                     account.refund_balance += bill.refund_balance; // Refund the balance to the user's account
@@ -177,10 +177,6 @@ const updateOrderStatus = async (req, res) => {
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
-
-            // Add the refund amount to the user's refund balance
-            user.refund_balance = (user.refund_balance || 0) + order.bill.total_amount;
-            await user.save();
 
             // Generate order details for the email
             const customerEmail = user.user_name; // Get the customer's email
@@ -210,7 +206,7 @@ const updateOrderStatus = async (req, res) => {
                             ${orderDetails}
                         </div>
                         <p>Lý do hủy đơn hàng: <strong>${note}</strong></p>
-                        <p>Số tiền <strong>${order.bill.total_amount.toLocaleString()} đ</strong> sẽ được hoàn vào tài khoản của bạn muộn nhất là trong 24 giờ tới. Bạn có thể sử dụng số tiền này cho lần mua hàng tiếp theo.</p>
+                        <p>Số tiền <strong>${(order.bill.total_amount + order.bill.refund_balance).toLocaleString} đ</strong> sẽ được hoàn vào tài khoản của bạn muộn nhất là trong 24 giờ tới. Bạn có thể sử dụng số tiền này cho lần mua hàng tiếp theo.</p>
                         <p>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email này.</p>
                         <p>Trân trọng,</p>
                         <p>Đội ngũ hỗ trợ khách hàng</p>

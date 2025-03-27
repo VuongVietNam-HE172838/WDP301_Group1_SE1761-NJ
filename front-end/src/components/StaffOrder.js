@@ -180,7 +180,14 @@ const StaffOrder = () => {
                                             <Accordion.Header>{order.bill.customer_name} - {new Date(order.bill.created_at).toLocaleString()}</Accordion.Header>
                                             <Accordion.Body>
                                                 <p><strong>Loại đơn:</strong> {order.order_type}</p>
-                                                <p><strong>Trạng thái:</strong> <span style={{ color: order.status === 'done' ? 'green' : order.status === 'on going' ? 'orange' : 'red', fontWeight: 'bold' }}>{order.status}</span></p>
+                                                <p><strong>Trạng thái:</strong> 
+                                                    <span style={{ color: order.status === 'done' ? 'green' : order.status === 'on going' ? 'orange' : 'red', fontWeight: 'bold' }}>
+                                                        {order.status}
+                                                    </span>
+                                                </p>
+                                                {order.status === 'cancel' && (
+                                                    <p><strong>Lý do hủy:</strong> {order.note}</p>
+                                                )}
                                                 <p><strong>Tổng tiền:</strong> {order.bill.total_amount.toLocaleString()} đ</p>
                                                 <p><strong>Danh sách món:</strong></p>
                                                 <ul>
@@ -188,11 +195,28 @@ const StaffOrder = () => {
                                                         <li key={`${item.item_id._id}-${index}`}>{item.item_id.name} - Số lượng: {item.quantity} - Giá: {item.price.toLocaleString()} đ</li>
                                                     ))}
                                                 </ul>
-                                                <p><strong>Ghi chú</strong> {order.note}</p>
                                                 <div>
-                                                    <Button variant="success" onClick={() => updateOrderStatus(order._id, 'done')}>Hoàn thành</Button>
-                                                    <Button variant="warning" onClick={() => updateOrderStatus(order._id, 'on going')}>Đang làm</Button>
-                                                    <Button variant="danger" onClick={() => openCancelModal(order._id)}>Hủy</Button>
+                                                    <Button 
+                                                        variant="success" 
+                                                        onClick={() => updateOrderStatus(order._id, 'done')} 
+                                                        disabled={order.status === 'cancel' || order.status === 'done'}
+                                                    >
+                                                        Hoàn thành
+                                                    </Button>
+                                                    <Button 
+                                                        variant="warning" 
+                                                        onClick={() => updateOrderStatus(order._id, 'on going')} 
+                                                        disabled={order.status === 'cancel' || order.status === 'done'}
+                                                    >
+                                                        Đang làm
+                                                    </Button>
+                                                    <Button 
+                                                        variant="danger" 
+                                                        onClick={() => openCancelModal(order._id)} 
+                                                        disabled={order.status === 'cancel' || order.status === 'done'}
+                                                    >
+                                                        Hủy
+                                                    </Button>
                                                 </div>
                                             </Accordion.Body>
                                         </Accordion.Item>
@@ -210,7 +234,14 @@ const StaffOrder = () => {
                                                 <p><strong>Thời gian giao hàng:</strong> {order.bill.delivery_time}</p>
                                                 <p><strong>Phương thức giao hàng:</strong> {order.bill.delivery_method}</p>
                                                 <p><strong>Loại đơn:</strong> {order.order_type}</p>
-                                                <p><strong>Trạng thái:</strong> <span style={{ color: order.status === 'done' ? 'green' : order.status === 'on going' ? 'orange' : 'red', fontWeight: 'bold' }}>{order.status}</span></p>
+                                                <p><strong>Trạng thái:</strong> 
+                                                    <span style={{ color: order.status === 'done' ? 'green' : order.status === 'on going' ? 'orange' : 'red', fontWeight: 'bold' }}>
+                                                        {order.status}
+                                                    </span>
+                                                </p>
+                                                {order.status === 'cancel' && (
+                                                    <p><strong>Lý do hủy:</strong> {order.note}</p>
+                                                )}
                                                 <p><strong>Tổng tiền:</strong> {order.bill.total_amount.toLocaleString()} đ</p>
                                                 <p><strong>Danh sách món:</strong></p>
                                                 <ul>
@@ -219,9 +250,27 @@ const StaffOrder = () => {
                                                     ))}
                                                 </ul>
                                                 <div>
-                                                    <Button variant="success" onClick={() => updateOrderStatus(order._id, 'done')}>Hoàn thành</Button>
-                                                    <Button variant="warning" onClick={() => updateOrderStatus(order._id, 'on going')}>Đang làm</Button>
-                                                    <Button variant="danger" onClick={() => openCancelModal(order._id)}>Hủy</Button>
+                                                    <Button 
+                                                        variant="success" 
+                                                        onClick={() => updateOrderStatus(order._id, 'done')} 
+                                                        disabled={order.status === 'cancel' || order.status === 'done'}
+                                                    >
+                                                        Hoàn thành
+                                                    </Button>
+                                                    <Button 
+                                                        variant="warning" 
+                                                        onClick={() => updateOrderStatus(order._id, 'on going')} 
+                                                        disabled={order.status === 'cancel' || order.status === 'done'}
+                                                    >
+                                                        Đang làm
+                                                    </Button>
+                                                    <Button 
+                                                        variant="danger" 
+                                                        onClick={() => openCancelModal(order._id)} 
+                                                        disabled={order.status === 'cancel' || order.status === 'done'}
+                                                    >
+                                                        Hủy
+                                                    </Button>
                                                 </div>
                                             </Accordion.Body>
                                         </Accordion.Item>
