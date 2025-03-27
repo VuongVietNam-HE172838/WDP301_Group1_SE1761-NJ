@@ -5,16 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const QRComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cartItems, billId } = location.state || { cartItems: [], billId: "" };
-
-  const [totalAmount, setTotalAmount] = useState(0);
-
-  useEffect(() => {
-    const calculateTotalAmount = () => {
-      return cartItems.reduce((total, item) => total + item.optional.price * item.quantity, 0);
-    };
-    setTotalAmount(calculateTotalAmount());
-  }, [cartItems]);
+  const { cartItems, billId, totalAmount } = location.state || { cartItems: [], billId: "", totalAmount: 0 };
 
   useEffect(() => {
     const checkPaymentStatus = async () => {

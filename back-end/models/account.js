@@ -9,7 +9,8 @@ const AccountSchema = new Schema({
   start_working: { type: Date, default: Date.now },
   loginAttempts: { type: Number, required: true, default: 0 },
   lockUntil: { type: Number },
-  isVerified: { type: Boolean, default: false } // Thêm trường isVerified
+  isVerified: { type: Boolean, default: false },
+  refund_balance: { type: Number, default: 0 } // Add refund balance field
 });
 
 AccountSchema.virtual('isLocked').get(function() {
