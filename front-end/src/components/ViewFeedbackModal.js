@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { FaStar } from 'react-icons/fa';
 import axios from 'axios';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const FeedbackModal = ({ show, onHide, orderId }) => {
   const [feedbackText, setFeedbackText] = useState('');
@@ -47,27 +49,28 @@ const FeedbackModal = ({ show, onHide, orderId }) => {
 
   const handleDelete = async () => {
     if (!feedbackId) return;
-
+  
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`${process.env.REACT_APP_URL_API_BACKEND}/feedback/${feedbackId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      alert('Xóa feedback thành công!');
+  
+      toast.success('🗑️ Xóa feedback thành công!', { position: 'top-right', autoClose: 3000 });
+  
       setIsFeedbackExist(false);
       setFeedbackText('');
       setRating(0);
       onHide();
     } catch (error) {
       console.error('Lỗi xóa feedback:', error);
-      alert('Xóa feedback thất bại!');
+      toast.error('❌ Xóa feedback thất bại!', { position: 'top-right', autoClose: 3000 });
     }
   };
 
   const handleEdit = async () => {
     if (!feedbackId) return;
-
+  
     try {
       const token = localStorage.getItem('token');
       await axios.put(`${process.env.REACT_APP_URL_API_BACKEND}/feedback/${feedbackId}`, {
@@ -76,18 +79,20 @@ const FeedbackModal = ({ show, onHide, orderId }) => {
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      alert('Chỉnh sửa feedback thành công!');
+  
+      toast.success('✏️ Chỉnh sửa feedback thành công!', { position: 'top-right', autoClose: 3000 });
+  
       setFeedbackText(editedText);
       setRating(editedRating);
       setIsEditing(false);
     } catch (error) {
       console.error('Lỗi sửa feedback:', error);
-      alert('Sửa feedback thất bại!');
+      toast.error('❌ Sửa feedback thất bại!', { position: 'top-right', autoClose: 3000 });
     }
   };
 
   return (
+    
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
         <Modal.Title>Feedback của bạn</Modal.Title>

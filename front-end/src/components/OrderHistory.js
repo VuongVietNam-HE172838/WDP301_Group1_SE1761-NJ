@@ -6,6 +6,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FeedbackModal from "./FeedbackModal";
 import ViewFeedbackModal from "./ViewFeedbackModal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -102,18 +104,18 @@ const OrderHistory = () => {
   };
   const handleFeedbackSubmit = async () => {
     if (!selectedOrder || !selectedOrder._id || !selectedOrder.order_by) {
-      alert("Lỗi: Không có đơn hàng hợp lệ!");
+      toast.error("Lỗi: Không có đơn hàng hợp lệ!");
       return;
     }
-
+  
     if (!rating || feedbackText.trim() === "") {
-      alert("Vui lòng nhập đánh giá và nội dung feedback!");
+      toast.warn("Vui lòng nhập đánh giá và nội dung feedback!");
       return;
     }
-
+  
     try {
       const token = localStorage.getItem('token');
-
+  
       // Kiểm tra xem đơn hàng này đã có feedback chưa
       const feedbackResponse = await axios.get(
         `http://localhost:9999/api/feedback/order/${selectedOrder._id}`,
@@ -121,12 +123,12 @@ const OrderHistory = () => {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-
+  
       if (feedbackResponse.data.length > 0) {
-        alert("Bạn đã gửi feedback cho đơn hàng này rồi!");
+        toast.info("Bạn đã gửi feedback cho đơn hàng này rồi!");
         return;
       }
-
+  
       // Nếu chưa có feedback, tiến hành gửi feedback mới
       await axios.post(`${process.env.REACT_APP_URL_API_BACKEND}/feedback`, {
         order: selectedOrder._id,
@@ -136,20 +138,21 @@ const OrderHistory = () => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
+  
       setIsFeedbackModalVisible(false);
       setFeedbackText('');
       setRating(0);
-      alert('Gửi feedback thành công!');
+      toast.success("Gửi feedback thành công!");
     } catch (error) {
       console.error('Error submitting feedback:', error.response?.data || error.message);
-      alert(`Gửi feedback thất bại! ${error.response?.data?.message || "Không xác định"}`);
+      toast.error(`Gửi feedback thất bại! ${error.response?.data?.message || "Không xác định"}`);
     }
   };
 
 
   return (
     <div className="container mt-4">
+      <ToastContainer position="top-right" autoClose={3000} />
       <h2 className="text-center mb-4">Lịch sử đơn hàng</h2>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <Form.Group controlId="filterDate" className="me-3">
