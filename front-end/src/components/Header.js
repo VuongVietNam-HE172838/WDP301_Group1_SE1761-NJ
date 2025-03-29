@@ -33,8 +33,16 @@ function Header() {
     navigate("/login");
   };
 
-  const navItems = ["TRANG CHỦ", "MENU", "GIỚI THIỆU", "TIN TỨC"];
-  const navItemLinks = ["home", "menu", "introduction", "blogs"];
+  const navItems =
+    accountDetail?.role === "ADMIN" || accountDetail?.role === "STAFF"
+      ? ["DASHBOARD"]
+      : ["TRANG CHỦ", "MENU", "GIỚI THIỆU", "TIN TỨC"];
+  const navItemLinks =
+    accountDetail?.role === "ADMIN"
+      ? ["admin"]
+      : accountDetail?.role === "STAFF"
+      ? ["staff-order"]
+      : ["home", "menu", "introduction", "blogs"];
 
   const location = useLocation();
 
@@ -43,7 +51,16 @@ function Header() {
       <nav className="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
         <div className="container">
           {/* Logo */}
-          <Link className="navbar-brand" to="/">
+          <Link
+            className="navbar-brand"
+            to={
+              accountDetail?.role === "ADMIN"
+                ? "/admin"
+                : accountDetail?.role === "STAFF"
+                ? "/staff-order"
+                : "/"
+            }
+          >
             <img
               src={logo}
               alt="Company logo"
@@ -105,34 +122,29 @@ function Header() {
                     className="dropdown-menu dropdown-menu-end"
                     aria-labelledby="dropdownMenuButton"
                   >
-                    <li>
-                      <Link className="dropdown-item" to="/profile">
-                        Chi tiết Profile
-                      </Link>
-                    </li>
-                    {/* <li>
-                      <Link className="dropdown-item" to="/transaction-history">
-                        Lịch sử giao dịch
-                      </Link>
-                    </li> */}
-                    <li>
-                      <Link className="dropdown-item" to="/order-history">
-                        Lịch sử đặt hàng
-                      </Link>
-                    </li>
-                    {accountDetail?.role === "STAFF" && (
+                    {(accountDetail?.role === "ADMIN" || accountDetail?.role === "STAFF") && (
                       <li>
-                        <Link className="dropdown-item" to="/staff-order">
-                          Staff Dashboard
+                        <Link
+                          className="dropdown-item"
+                          to={accountDetail?.role === "ADMIN" ? "/admin" : "/staff-order"}
+                        >
+                          DASHBOARD
                         </Link>
                       </li>
                     )}
-                    {accountDetail?.role === "ADMIN" && (
-                      <li>
-                        <Link className="dropdown-item" to="/admin">
-                          ADMIN Dashboard
-                        </Link>
-                      </li>
+                    {!(accountDetail?.role === "ADMIN" || accountDetail?.role === "STAFF") && (
+                      <>
+                        <li>
+                          <Link className="dropdown-item" to="/profile">
+                            Chi tiết Profile
+                          </Link>
+                        </li>
+                        <li>
+                          <Link className="dropdown-item" to="/order-history">
+                            Lịch sử đặt hàng
+                          </Link>
+                        </li>
+                      </>
                     )}
                     <li>
                       <hr className="dropdown-divider" />

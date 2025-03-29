@@ -22,6 +22,7 @@ const ConfirmOrderStaff = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -36,7 +37,7 @@ const ConfirmOrderStaff = () => {
         if (response.ok) {
           const data = await response.json();
           setUserInfo({
-            full_name: data.full_name || "",
+            full_name: "", // Start with an empty full_name for staff to input
             phone_number: data.phone_number || "",
             address: data.address || "",
           });
@@ -74,6 +75,11 @@ const ConfirmOrderStaff = () => {
   };
 
   const handlePayment = async () => {
+    if (!userInfo.full_name.trim()) {
+      setError("Họ và Tên là trường bắt buộc.");
+      return;
+    }
+    setError(""); // Clear error if validation passes
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Bạn cần đăng nhập để thực hiện chức năng này!");
@@ -120,6 +126,11 @@ const ConfirmOrderStaff = () => {
   };
 
   const handleShowModal = (paymentMethod) => {
+    if (!userInfo.full_name.trim()) {
+      setError("Họ và Tên là trường bắt buộc.");
+      return;
+    }
+    setError(""); // Clear error if validation passes
     setSelectedPaymentMethod(paymentMethod);
     setShowModal(true);
   };
@@ -171,7 +182,13 @@ const ConfirmOrderStaff = () => {
           <form>
             <div className="mb-3">
               <label className="form-label">Họ và Tên</label>
-              <input type="text" className="form-control" onChange={(e) => setUserInfo({ ...userInfo, full_name: e.target.value })} />
+              <input
+                type="text"
+                className="form-control"
+                value={userInfo.full_name}
+                onChange={(e) => setUserInfo({ ...userInfo, full_name: e.target.value })}
+              />
+              {error && <small className="text-danger">{error}</small>}
             </div>
 
           </form>
