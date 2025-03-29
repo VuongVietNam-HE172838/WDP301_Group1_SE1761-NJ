@@ -106,7 +106,7 @@ const ConfirmOrderStaff = () => {
         if (selectedPaymentMethod === 'cash') {
           navigate("/staff-order");
         } else {
-          navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill } });
+          navigate("/payments", { state: { cartItems, deliveryMethod, deliveryTime, billId: data.order.bill, totalAmount: totalPrice } });
         }
       } else {
         const errorData = await response.json();

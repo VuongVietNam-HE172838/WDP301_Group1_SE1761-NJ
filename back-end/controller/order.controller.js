@@ -32,6 +32,20 @@ const createOrder = async (req, res) => {
 
         await newBill.save();
 
+        // Deduct quantity from Dish if payment method is cash
+        if (payment_method === 'cash') {
+            for (const item of newBill.items) {
+                const dish = await Dish.findById(item.item_id);
+                if (dish) {
+                    dish.quantity -= item.quantity; // Deduct the quantity
+                    if (dish.quantity < 0) {
+                        return res.status(400).json({ message: `Not enough stock for ${dish.name}` });
+                    }
+                    await dish.save();
+                }
+            }
+        }
+
         // Create a new order
         const newOrder = new Order({
             bill: newBill._id,
@@ -46,7 +60,6 @@ const createOrder = async (req, res) => {
                 account.refund_balance -= refund_balance; // Deduct the refund balance from the user's account
                 await account.save();
             }
-
         }
 
         await newOrder.save();
@@ -62,7 +75,6 @@ const confirmPayment = async (req, res) => {
     try {
         const { orderId, payment_method } = req.body;
 
-
         const order = await Order.findById(orderId).populate('bill');
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -75,8 +87,26 @@ const confirmPayment = async (req, res) => {
         order.bill.isPaid = true;
         await order.bill.save();
 
+        if (payment_method === 'cash') {
+            for (const item of order.bill.items) {
+                const dish = await Dish.findById(item.item_id);
+                console.log('dish.quantity: ', dish.quantity);
+                if (dish) {
+                    dish.quantity -= item.quantity; // Deduct the quantity
+                    if (dish.quantity < 0) {
+                        return res.status(400).json({ message: `Not enough stock for ${dish.name}` });
+                    }
+                    await dish.save();
+                }
+                console.log('dish.quantity: ', dish.quantity);
+            }
+            
+        }
+
+        
         res.status(200).json({ message: `Payment confirmed by ${payment_method}`, order });
     } catch (error) {
+        console.error('Error confirming payment:', error);
         res.status(500).json({ message: 'Failed to confirm payment', error });
     }
 };

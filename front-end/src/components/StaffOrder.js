@@ -16,6 +16,8 @@ const StaffOrder = () => {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [cancelOrderId, setCancelOrderId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [ordersPerPage] = useState(5);
 
     // Lấy danh sách categories từ MongoDB
     useEffect(() => {
@@ -141,6 +143,12 @@ const StaffOrder = () => {
         setShowCancelModal(true);
     };
 
+    const indexOfLastOrder = currentPage * ordersPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+    const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     return (
         <>
             {/* Cancel Order Modal */}
@@ -175,7 +183,7 @@ const StaffOrder = () => {
                         <Tabs defaultActiveKey="counter" id="order-tabs" className="mb-3">
                             <Tab eventKey="counter" title="Tại quầy">
                                 <Accordion>
-                                    {orders.filter(order => order.order_type === 'counter' && order.bill.isPaid).map(order => (
+                                    {currentOrders.filter(order => order.order_type === 'counter' && order.bill.isPaid).map(order => (
                                         <Accordion.Item eventKey={order._id} key={order._id}>
                                             <Accordion.Header>{order.bill.customer_name} - {new Date(order.bill.created_at).toLocaleString()}</Accordion.Header>
                                             <Accordion.Body>
@@ -225,7 +233,7 @@ const StaffOrder = () => {
                             </Tab>
                             <Tab eventKey="online" title="Online">
                                 <Accordion>
-                                    {orders.filter(order => order.order_type !== 'counter' && order.bill.isPaid).map(order => (
+                                    {currentOrders.filter(order => order.order_type !== 'counter' && order.bill.isPaid).map(order => (
                                         <Accordion.Item eventKey={order._id} key={order._id}>
                                             <Accordion.Header>{order.bill.customer_name} - {new Date(order.bill.created_at).toLocaleString()}</Accordion.Header>
                                             <Accordion.Body>
@@ -278,6 +286,24 @@ const StaffOrder = () => {
                                 </Accordion>
                             </Tab>
                         </Tabs>
+                        {/* Pagination Controls */}
+                        <div className="d-flex justify-content-center mt-3">
+                            <Button
+                                variant="light"
+                                disabled={currentPage === 1}
+                                onClick={() => paginate(currentPage - 1)}
+                            >
+                                Trước
+                            </Button>
+                            <span className="mx-2 align-self-center">Trang {currentPage}</span>
+                            <Button
+                                variant="success"
+                                disabled={indexOfLastOrder >= orders.length}
+                                onClick={() => paginate(currentPage + 1)}
+                            >
+                                Sau
+                            </Button>
+                        </div>
                     </Col>
                     {/* Main Content */}
                     <Col md={6}>
