@@ -3,6 +3,8 @@ const Bill = require('../models/bill');
 const Dish = require('../models/dish');
 const Account = require('../models/account');
 const AccountDetail = require('../models/accountDetail');
+const CartItem = require('../models/cartItem');
+const Cart = require('../models/cart');
 const jwt = require('jsonwebtoken');
 const nodemailer = require("nodemailer");
 
@@ -54,11 +56,35 @@ const createOrder = async (req, res) => {
             status: 'on going' // Set order status to on going
         });
 
-        if (total_price === 0 && use_refund_balance) {
+        if (total_price === 0 && use_refund_balance && delivery_method === 'online') {
             const account = await Account.findById(user._id);
             if (account) {
                 account.refund_balance -= refund_balance; // Deduct the refund balance from the user's account
                 await account.save();
+            }
+            const cart = await Cart.findOne({ account_id: user._id });
+            if (!cart) {
+                return res.status(404).json({ message: 'Cart not found' });
+            }
+            // Update the quantity of each dish in the bill and remove items from the cart
+            for (const item of newBill.items) {
+                const dish = await Dish.findById(item.item_id);
+                if (dish) {
+                    dish.quantity -= item.quantity;
+                    await dish.save();
+                }
+                // Find the corresponding cart item
+                const cartItem = await CartItem.findOne({ dish_id: item.item_id, cart_id: cart._id });
+                if (cartItem) {
+                    if (cartItem.quantity > item.quantity) {
+                        // Reduce the quantity in the cart
+                        cartItem.quantity -= item.quantity;
+                        await cartItem.save();
+                    } else {
+                        // Remove the item from the cart
+                        await CartItem.deleteOne({ _id: cartItem._id });
+                    }
+                }
             }
         }
 
@@ -192,10 +218,17 @@ const updateOrderStatus = async (req, res) => {
         if (!bill) {
             return res.status(404).json({ message: 'Bill not found' });
         } else {
-            if (bill.use_refund_balance && status === 'cancel') {
+            if (bill.use_refund_balance && status === 'cancel' && order.order_type === 'online') {
                 const account = await Account.findById(bill.user_id);
                 if (account) {
                     account.refund_balance += bill.refund_balance; // Refund the balance to the user's account
+                    await account.save();
+                }
+            }
+            if (status === 'cancel' && order.order_type === 'online' && !bill.use_refund_balance) {
+                const account = await Account.findById(bill.user_id);
+                if (account) {
+                    account.refund_balance += bill.total_amount; // Refund the balance to the user's account
                     await account.save();
                 }
             }

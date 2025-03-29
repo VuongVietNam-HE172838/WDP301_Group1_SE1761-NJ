@@ -30,8 +30,7 @@ const AdminDashboard = () => {
         return <ManageAccounts />;
       case "feedback":
         return <Feedback />;
-      case "order":
-        return <ManageOrder />;
+
       default:
         return <AdminStatistics />;
     }
@@ -90,16 +89,7 @@ const AdminDashboard = () => {
 
                 </Link>
               </li>
-              <li className="nav-item">
-                <Link
-                  className={`nav-link ${activeTab === "feedback" ? "active" : ""}`}
-                  onClick={() => setActiveTab("order")}
-                >
-
-                  <i className="bx bxs-news"></i> Quản lý Order
-
-                </Link>
-              </li>
+              
               <li className="nav-item">
                 <Link
                   className={`nav-link ${activeTab === "feedback" ? "active" : ""}`}
