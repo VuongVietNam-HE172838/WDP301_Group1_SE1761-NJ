@@ -55,26 +55,43 @@ const ManageDish = () => {
     };
 
     const handleAddDish = async () => {
-        if (!newDish.name.trim() || !newDish.price.trim() || !newDish.size.trim() || !newDish.category_id || !newDish.description.trim()) {
-            toast.warning("Vui lòng điền đầy đủ thông tin!");
-            return;
-        }
+    if (
+        !newDish.name.trim() ||
+        !newDish.price.trim() ||
+        !newDish.size.trim() ||
+        !newDish.category_id ||
+        !newDish.description.trim()
+    ) {
+        toast.warning("Vui lòng điền đầy đủ thông tin!");
+        return;
+    }
 
-        try {
-            await axios.post("http://localhost:9999/menu/dishes", newDish, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            fetchDishes();
-            setNewDish({ name: "", price: "", size: "", img: "", quantity: "", category_id: "", description: "" });
-            setShowAddModal(false);
-            toast.success("Thêm món ăn thành công!");
-        } catch (error) {
-            console.error("Error adding dish:", error);
-            toast.error("Lỗi khi thêm món ăn!");
-        }
-    };
+    if (isNaN(newDish.price) || Number(newDish.price) <= 0) {
+        toast.warning("Giá món ăn phải lớn hơn 0!");
+        return;
+    }
+
+    if (isNaN(newDish.quantity) || Number(newDish.quantity) <= 0) {
+        toast.warning("Số lượng phải lớn hơn 0!");
+        return;
+    }
+
+    try {
+        await axios.post("http://localhost:9999/menu/dishes", newDish, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        fetchDishes();
+        setNewDish({ name: "", price: "", size: "", img: "", quantity: "", category_id: "", description: "" });
+        setShowAddModal(false);
+        toast.success("Thêm món ăn thành công!");
+    } catch (error) {
+        console.error("Error adding dish:", error);
+        toast.error("Lỗi khi thêm món ăn!");
+    }
+};
+
 
     const handleEditClick = (dish) => {
         setEditDish({
@@ -86,41 +103,58 @@ const ManageDish = () => {
     };
 
     const handleEditDish = async () => {
-        if (!editDish?._id) {
-            toast.error("Lỗi: Món ăn không có ID!");
-            return;
-        }
+    if (!editDish?._id) {
+        toast.error("Lỗi: Món ăn không có ID!");
+        return;
+    }
 
-        if (!editDish?.name?.trim() || !String(editDish?.price)?.trim() || !editDish?.size?.trim() || !editDish?.category_id || !editDish?.description?.trim()) {
-            toast.warning("Vui lòng điền đầy đủ thông tin!");
-            return;
-        }
+    if (
+        !editDish?.name?.trim() ||
+        !String(editDish?.price)?.trim() ||
+        !editDish?.size?.trim() ||
+        !editDish?.category_id ||
+        !editDish?.description?.trim()
+    ) {
+        toast.warning("Vui lòng điền đầy đủ thông tin!");
+        return;
+    }
 
-        const updatedDish = {
-            ...editDish,
-            optional: {
-                price: String(editDish.price),
-                size: editDish.size,
-            },
-            category_id: editDish.category_id,
-            description: editDish.description,
-        };
+    if (isNaN(editDish.price) || Number(editDish.price) <= 0) {
+        toast.warning("Giá món ăn phải lớn hơn 0!");
+        return;
+    }
 
-        try {
-            await axios.put(`http://localhost:9999/menu/dishes/${editDish._id}`, updatedDish, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-            fetchDishes();
-            setShowEditModal(false);
-            setEditDish(null);
-            toast.success("Cập nhật món ăn thành công!");
-        } catch (error) {
-            console.error("Error updating dish:", error);
-            toast.error("Lỗi khi cập nhật món ăn!");
-        }
+    if (isNaN(editDish.quantity) || Number(editDish.quantity) <= 0) {
+        toast.warning("Số lượng phải lớn hơn 0!");
+        return;
+    }
+
+    const updatedDish = {
+        ...editDish,
+        optional: {
+            price: String(editDish.price),
+            size: editDish.size,
+        },
+        category_id: editDish.category_id,
+        description: editDish.description,
     };
+
+    try {
+        await axios.put(`http://localhost:9999/menu/dishes/${editDish._id}`, updatedDish, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        fetchDishes();
+        setShowEditModal(false);
+        setEditDish(null);
+        toast.success("Cập nhật món ăn thành công!");
+    } catch (error) {
+        console.error("Error updating dish:", error);
+        toast.error("Lỗi khi cập nhật món ăn!");
+    }
+};
+
 
     const handleDeleteDish = async (dishId) => {
         if (window.confirm("Bạn có chắc chắn muốn xóa món ăn này?")) {
@@ -213,11 +247,15 @@ const ManageDish = () => {
                     <Form.Group>
                         <Form.Label>Size</Form.Label>
                         <Form.Control
-                            type="text"
-                            placeholder="Enter size"
+                            as="select"
                             value={newDish.size}
                             onChange={(e) => setNewDish({ ...newDish, size: e.target.value })}
-                        />
+                          >
+                           <option value="">Select size</option>
+                           <option value="Large">Large</option>
+                           <option value="Medium">Medium</option>
+                           <option value="Small">Small</option>
+                    </Form.Control>
                     </Form.Group>
                     <Form.Group>
                         <Form.Label>Image URL</Form.Label>
@@ -298,10 +336,15 @@ const ManageDish = () => {
                     <Form.Group>
                         <Form.Label>Size</Form.Label>
                         <Form.Control
-                            type="text"
+                            as="select"
                             value={editDish?.size || ""}
                             onChange={(e) => setEditDish({ ...editDish, size: e.target.value })}
-                        />
+                         >
+                          <option value="">Select size</option>
+                          <option value="Large">Large</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Small">Small</option>
+                    </Form.Control>
                     </Form.Group>
                     <Form.Group>
                         <Form.Label>Image URL</Form.Label>
