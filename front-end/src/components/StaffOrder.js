@@ -18,6 +18,9 @@ const StaffOrder = () => {
     const [cancelOrderId, setCancelOrderId] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(5);
+    const [selectedReason, setSelectedReason] = useState('');
+    const [showOtherReasonInput, setShowOtherReasonInput] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Lấy danh sách categories từ MongoDB
     useEffect(() => {
@@ -41,10 +44,7 @@ const StaffOrder = () => {
             if (!selectedCategory) return;
             try {
                 const response = await axios.get(`http://localhost:9999/menu/${selectedCategory}/dishes`);
-                // **Lọc những món ăn có quantity > 0**
-                const filteredDishes = response.data.filter(dish => parseInt(dish.quantity) > 0);
-                setDishes(filteredDishes);
-                // setDishes(response.data);
+                setDishes(response.data); // Include all dishes
             } catch (error) {
                 console.error("Error fetching dishes:", error);
             }
@@ -119,7 +119,22 @@ const StaffOrder = () => {
         }
     };
 
+    const handleReasonChange = (reason) => {
+        setSelectedReason(reason);
+        setShowOtherReasonInput(reason === 'Khác');
+        if (reason !== 'Khác') {
+            setCancelReason(reason); // Automatically set the reason if not "Khác"
+        } else {
+            setCancelReason(''); // Clear the reason if "Khác" is selected
+        }
+    };
+
     const handleCancelOrder = async () => {
+        if (showOtherReasonInput && !cancelReason.trim()) {
+            setErrorMessage('Vui lòng nhập lý do hủy đơn hàng.'); // Set error message
+            return;
+        }
+        setErrorMessage(''); // Clear error message if input is valid
         try {
             const token = localStorage.getItem('token');
             await axios.put(`${process.env.REACT_APP_URL_API_BACKEND}/order/${cancelOrderId}/status`, 
@@ -160,13 +175,41 @@ const StaffOrder = () => {
                     <Form>
                         <Form.Group controlId="cancelReason">
                             <Form.Label>Lý do hủy</Form.Label>
-                            <Form.Control 
-                                as="textarea" 
-                                rows={3} 
-                                value={cancelReason} 
-                                onChange={(e) => setCancelReason(e.target.value)} 
-                                placeholder="Nhập lý do hủy đơn hàng..." 
-                            />
+                            <div>
+                                <Form.Check 
+                                    type="radio" 
+                                    label="Hết hàng" 
+                                    name="cancelReason" 
+                                    onChange={() => handleReasonChange('Hết hàng')} 
+                                    checked={selectedReason === 'Hết hàng'} 
+                                />
+                                <Form.Check 
+                                    type="radio" 
+                                    label="Khách hàng hủy đơn" 
+                                    name="cancelReason" 
+                                    onChange={() => handleReasonChange('Khách hàng hủy đơn')} 
+                                    checked={selectedReason === 'Khách hàng hủy đơn'} 
+                                />
+                                <Form.Check 
+                                    type="radio" 
+                                    label="Khác" 
+                                    name="cancelReason" 
+                                    onChange={() => handleReasonChange('Khác')} 
+                                    checked={selectedReason === 'Khác'} 
+                                />
+                            </div>
+                            {showOtherReasonInput && (
+                                <>
+                                    <Form.Control 
+                                        as="textarea" 
+                                        rows={3} 
+                                        value={cancelReason} 
+                                        onChange={(e) => setCancelReason(e.target.value)} 
+                                        placeholder="Nhập lý do hủy đơn hàng..." 
+                                    />
+                                    {errorMessage && <div style={{ color: 'red', marginTop: '5px' }}>{errorMessage}</div>}
+                                </>
+                            )}
                         </Form.Group>
                     </Form>
                 </Modal.Body>
@@ -176,7 +219,7 @@ const StaffOrder = () => {
                 </Modal.Footer>
             </Modal>
             {/* Main Component */}
-            <Container fluid>
+            <Container fluid style={{ marginTop: '20px' }}> {/* Add margin to separate from header */}
                 <Row>
                     <Col md={3} style={{ bottom: '0', overflowY: 'auto', backgroundColor: '#f8f9fa', padding: '20px', paddingTop:'50px', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
                         <h5>Danh sách đơn hàng</h5>
@@ -218,13 +261,13 @@ const StaffOrder = () => {
                                                     >
                                                         Đang làm
                                                     </Button>
-                                                    <Button 
+                                                    {/* <Button 
                                                         variant="danger" 
                                                         onClick={() => openCancelModal(order._id)} 
                                                         disabled={order.status === 'cancel' || order.status === 'done'}
                                                     >
                                                         Hủy
-                                                    </Button>
+                                                    </Button> */}
                                                 </div>
                                             </Accordion.Body>
                                         </Accordion.Item>
@@ -347,9 +390,19 @@ const StaffOrder = () => {
                                                         style={{ height: '50px', width: '50px', objectFit: 'cover', borderRadius: '5px' }} // Small image
                                                     />
                                                     <Card.Title className="fw-bold mb-0 ms-3" style={{ fontSize: '1rem' }}>{dish.name}</Card.Title> 
-                                                    <p className="mb-0 ms-3" style={{ fontSize: '0.8rem' }}>Còn lại: {dish.quantity}</p> {/* Display remaining quantity */}
+                                                    <p className="mb-0 ms-3" style={{ fontSize: '0.8rem' }}>
+                                                        {dish.quantity > 0 ? `Còn lại: ${dish.quantity}` : 'Hết hàng'}
+                                                    </p> {/* Display remaining quantity or "Hết hàng" */}
                                                 </div>
-                                                <Button variant="danger" className="fw-bold" onClick={() => addToCart(dish)} style={{ fontSize: '0.9rem' }}>Thêm</Button> 
+                                                <Button 
+                                                    variant="danger" 
+                                                    className="fw-bold" 
+                                                    onClick={() => addToCart(dish)} 
+                                                    style={{ fontSize: '0.9rem' }} 
+                                                    disabled={dish.quantity === 0} // Disable button if out of stock
+                                                >
+                                                    Thêm
+                                                </Button> 
                                             </Card.Body>
                                         </Card>
                                     </Col>

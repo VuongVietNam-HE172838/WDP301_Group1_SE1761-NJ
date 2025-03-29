@@ -200,57 +200,54 @@ const getBillHistory = async (req, res) => {
 
 const getRevenueStatistics = async (req, res) => {
   try {
-    const months = parseInt(req.query.months) || 3; // Default to 3 months if not provided
+    const months = parseInt(req.query.months) || 3;
     const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1); // Start of the range
+    const startDate = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
-    // Query to find bills with isPaid: true and delivery_time within the specified range
-    const revenueData = await Bill.aggregate([
+    // Lọc đơn hàng có trạng thái "done" trước, rồi mới tính doanh thu từ Bill
+    const revenueData = await Order.aggregate([
       {
-        $match: {
-          isPaid: true,
-          delivery_time: { $gte: startDate, $lte: now },
-        },
+        $match: { status: "done"}, // Lọc đơn hàng có trạng thái "done"
       },
-      {
-        $group: {
-          _id: { $month: "$delivery_time" }, // Group by month
-          totalRevenue: { $sum: "$total_amount" }, // Sum total_amount
-        },
-      },
-      {
-        $sort: { _id: 1 }, // Sort by month
-      },
-    ]);
-
-    // Query to count orders grouped by month using payment_at and filtering by isPaid in the associated bill
-    const orderData = await Order.aggregate([
       {
         $lookup: {
-          from: "bills", // The name of the Bill collection in MongoDB
+          from: "bills",
           localField: "bill",
           foreignField: "_id",
           as: "billDetails",
         },
       },
-      {
-        $unwind: "$billDetails", // Unwind the billDetails array to access individual bill objects
-      },
+      { $unwind: "$billDetails" },
       {
         $match: {
-          "billDetails.isPaid": true, // Filter orders where the associated bill isPaid is true
-          updated_at: { $gte: startDate, $lte: now }, // Filter by payment_at date range
+          "billDetails.isPaid": true, // Chỉ tính hóa đơn đã thanh toán
+          "billDetails.delivery_time": { $gte: startDate, $lte: now },
         },
       },
       {
         $group: {
-          _id: { $month: "$updated_at" }, // Group by month of payment_at
-          totalOrders: { $sum: 1 }, // Count orders
+          _id: { $month: "$billDetails.delivery_time" },
+          totalRevenue: { $sum: "$billDetails.total_amount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Lọc đơn hàng có trạng thái "done" trước, rồi đếm số lượng đơn hàng
+    const orderData = await Order.aggregate([
+      {
+        $match: {
+          status: "done", // Chỉ lấy đơn có trạng thái "done"
+          updated_at: { $gte: startDate, $lte: now },
         },
       },
       {
-        $sort: { _id: 1 }, // Sort by month
+        $group: {
+          _id: { $month: "$updated_at" },
+          totalOrders: { $sum: 1 },
+        },
       },
+      { $sort: { _id: 1 } },
     ]);
 
     res.json({
@@ -261,6 +258,7 @@ const getRevenueStatistics = async (req, res) => {
     res.status(500).json({ message: "Error fetching statistics", error });
   }
 };
+
 
 module.exports = {
   getAccounts,

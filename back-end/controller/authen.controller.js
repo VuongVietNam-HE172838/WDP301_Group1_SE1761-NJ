@@ -60,7 +60,7 @@ exports.login = async (req, res) => {
 
     const payload = { accountId: account._id };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "8h",
     });
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
       expiresIn: "1d",
@@ -140,7 +140,7 @@ exports.googleLogin = async (req, res) => {
 
     const jwtPayload = { accountId: account._id };
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "8h",
     });
     const refreshToken = jwt.sign(jwtPayload, process.env.JWT_REFRESH_SECRET, {
       expiresIn: "1d",
