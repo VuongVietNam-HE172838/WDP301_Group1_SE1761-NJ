@@ -2,12 +2,19 @@ import React, { useEffect } from "react";
 
 const SuccessPayment = () => {
   useEffect(() => {
-    const time = setTimeout(() => {
-      window.location.href = "/order-history"; // Redirect về trang chủ sau 2s
-    }, 4000);
-    return () => clearTimeout(time);
-  });
+    const role = localStorage.getItem("role"); // Lấy role từ localStorage
 
+    const time = setTimeout(() => {
+      if (role === "staff") {
+        window.location.href = "/staff-order"; // Chuyển hướng staff
+      } else {
+        window.location.href = "/order-history"; // Chuyển hướng khách hàng
+      }
+    }, 4000);
+
+    return () => clearTimeout(time);
+  }, []); // Thêm [] để chỉ chạy 1 lần khi component mount
+  
   return (
     <div style={styles.container}>
       <div style={styles.circle}>
