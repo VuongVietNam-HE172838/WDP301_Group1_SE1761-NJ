@@ -363,7 +363,6 @@ const ManageDish = () => {
                         <th>Size</th>
                         <th onClick={() => sortDishes("quantity")}>Quantity</th>
                         <th>Description</th>
-                        <th>Category</th>
                         <th>Img</th>
                         <th>Actions</th>
                     </tr>
@@ -376,7 +375,6 @@ const ManageDish = () => {
                             <td>{dish.optional?.size}</td>
                             <td>{dish.quantity}</td>
                             <td>{dish.description}</td>
-                            <td>{dish.category_name}</td>
                             <td>
                                 {dish.img ? (
                                     <img src={dish.img} alt={dish.name} style={{ width: "100px", height: "auto" }} />
