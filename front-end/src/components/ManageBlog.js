@@ -129,6 +129,28 @@ const handleImageChange2 = (e) => {
     setEditBlog({ ...editBlog, img: URL.createObjectURL(file) }); // Hiển thị ảnh tạm thời
   }
 };
+const sortedBlogs = [...blogs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+const handleCloseModal = () => {
+  setShowAddModal(false);
+  setPreviewImage(null); // Xóa ảnh preview
+  setNewBlog({ title: "", content: "", img: "" });
+
+};
+const handleImageChange1 = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setNewBlog({ ...newBlog, img: file });
+
+    // Hiển thị ảnh preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
   return (
     <div className="container">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -137,47 +159,60 @@ const handleImageChange2 = (e) => {
         Add Blog
       </Button>
 
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Content</th>
-            <th>Image</th>
-            <th>Created At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {blogs.map((blog) => (
-            <tr key={blog._id}>
-              <td>{blog.title}</td>
-              <td>{blog.content}</td>
-              <td>
-                {blog.img ? (
-                  <img src={blog.img} alt={blog.title} style={{ width: "100px", height: "auto" }} />
-                ) : (
-                  "No Image"
-                )}
-              </td>
-              <td>{blog.created_at ? new Date(blog.created_at).toLocaleDateString("en-GB") : "N/A"}</td>
-              <td>
-                <div className="d-flex gap-2">
-                  <Button variant="warning" onClick={() => {
+      <Table striped bordered hover responsive className="mt-4 shadow-sm">
+      <thead className="table text-center">
+        <tr>
+          <th>Title</th>
+          <th>Content</th>
+          <th>Image</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sortedBlogs.map((blog) => (
+          <tr key={blog._id} className="align-middle text-center">
+            <td className="fw-bold text-primary">{blog.title}</td>
+            <td className="text-wrap" style={{ maxWidth: "400px", whiteSpace: "pre-wrap" }}>{blog.content}</td>
+            <td>
+              {blog.img ? (
+                <img
+                  src={blog.img}
+                  alt={blog.title}
+                  className="rounded border"
+                  style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                />
+              ) : (
+                <span className="text-muted">No Image</span>
+              )}
+            </td>
+            <td>{blog.created_at ? new Date(blog.created_at).toLocaleDateString("en-GB") : "N/A"}</td>
+            <td>
+              <div className="d-flex justify-content-center gap-2">
+                <Button
+                  variant="outline-warning"
+                  size="sm"
+                  onClick={() => {
                     setEditBlog(blog);
                     setShowEditModal(true);
-                  }}>
-                    Edit
-                  </Button>
-                  <Button variant="danger" onClick={() => handleDeleteBlog(blog._id)}>
-                    Delete
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-
+                  }}
+                >
+                  ✏️ Edit
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => handleDeleteBlog(blog._id)}
+                >
+                  🗑️ Delete
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+    
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
       <Modal.Header closeButton>
         <Modal.Title>Edit Blog</Modal.Title>
@@ -255,31 +290,69 @@ const handleImageChange2 = (e) => {
       </Modal.Footer>
     </Modal>
       {/* Modal thêm blog */}
-      <Modal show={showAddModal} onHide={() => setShowAddModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Add Blog</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group>
-              <Form.Label>Title</Form.Label>
-              <Form.Control type="text" value={newBlog.title} onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })} />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Content</Form.Label>
-              <Form.Control as="textarea" rows={3} value={newBlog.content} onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })} />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Image</Form.Label>
-              <Form.Control type="file" accept="image/*" onChange={(e) => setNewBlog({ ...newBlog, img: e.target.files[0] })} />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowAddModal(false)}>Close</Button>
-          <Button variant="primary" onClick={handleAddBlog}>Add</Button>
-        </Modal.Footer>
-      </Modal>
+      <Modal show={showAddModal} onHide={handleCloseModal} centered>
+   <Modal.Header closeButton>
+     <Modal.Title>Add Blog</Modal.Title>
+   </Modal.Header>
+   <Modal.Body>
+     <Form>
+       <Form.Group>
+         <Form.Label>Title</Form.Label>
+         <Form.Control
+           type="text"
+           value={newBlog.title}
+           onChange={(e) =>
+             setNewBlog({ ...newBlog, title: e.target.value })
+           }
+         />
+       </Form.Group>
+       <Form.Group>
+         <Form.Label>Content</Form.Label>
+         <Form.Control
+           as="textarea"
+           rows={3}
+           value={newBlog.content}
+           onChange={(e) =>
+             setNewBlog({ ...newBlog, content: e.target.value })
+           }
+         />
+       </Form.Group>
+       <Form.Group>
+         <Form.Label>Image</Form.Label>
+         <Form.Control
+           type="file"
+           accept="image/*"
+           onChange={handleImageChange1}
+         />
+       </Form.Group>
+ 
+       {/* Hiển thị ảnh preview */}
+       {previewImage && (
+         <div className="mt-3 text-center">
+           <img
+             src={previewImage}
+             alt="Preview"
+             style={{
+               width: "150px",
+               height: "150px",
+               borderRadius: "8px",
+               objectFit: "cover",
+             }}
+           />
+         </div>
+    
+       )}
+     </Form>
+   </Modal.Body>
+   <Modal.Footer>
+     <Button variant="secondary" onClick={handleCloseModal}>
+       Close
+     </Button>
+     <Button variant="primary" onClick={handleAddBlog}>
+       Add
+     </Button>
+   </Modal.Footer>
+ </Modal>
     </div>
   );
 };
