@@ -162,10 +162,17 @@ const updateOrderStatus = async (req, res) => {
         if (!bill) {
             return res.status(404).json({ message: 'Bill not found' });
         } else {
-            if (bill.use_refund_balance && status === 'cancel') {
+            if (bill.use_refund_balance && status === 'cancel' && order.order_type === 'online') {
                 const account = await Account.findById(bill.user_id);
                 if (account) {
                     account.refund_balance += bill.refund_balance; // Refund the balance to the user's account
+                    await account.save();
+                }
+            }
+            if (status === 'cancel' && order.order_type === 'online' && !bill.use_refund_balance) {
+                const account = await Account.findById(bill.user_id);
+                if (account) {
+                    account.refund_balance += bill.total_amount; // Refund the balance to the user's account
                     await account.save();
                 }
             }
