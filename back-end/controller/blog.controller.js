@@ -34,10 +34,10 @@ exports.createBlog = async (req, res) => {
       const { title, content } = req.body;
   
       // Kiểm tra tiêu đề
-      const isValidTitle = (title) => /^[a-zA-Z0-9\s]{10,100}$/.test(title);
+      const isValidTitle = (title) => title.trim().length > 20;
       if (!isValidTitle(title)) {
         return res.status(400).json({
-          message: "Tiêu đề không hợp lệ! Phải có từ 10-100 ký tự và không chứa ký tự đặc biệt."
+          message: "Tiêu đề không hợp lệ! Phải có từ có ít nhất 20 ký tự."
         });
       }
   
