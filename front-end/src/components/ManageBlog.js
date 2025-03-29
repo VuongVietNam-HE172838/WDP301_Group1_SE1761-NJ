@@ -237,21 +237,7 @@ const handleImageChange1 = (e) => {
                 onChange={(e) => setEditBlog({ ...editBlog, content: e.target.value })}
               />
             </Form.Group>
-            <Form.Group>
-              <Form.Label>Current Image</Form.Label>
-              <div className="mt-3 text-center">
-                <img
-                  src={editBlog.img}
-                  alt="Current"
-                  style={{
-                    width: "150px",
-                    height: "150px",
-                    borderRadius: "8px",
-                    objectFit: "cover",
-                  }}
-                />
-              </div>
-            </Form.Group>
+            
             <Form.Group>
               <Form.Label>Upload New Image</Form.Label>
               <Form.Control type="file" accept="image/*" onChange={handleImageChange2} />
